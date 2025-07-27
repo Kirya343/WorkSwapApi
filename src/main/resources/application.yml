@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8083
   tomcat:
     max-http-form-post-data-size: 100MB # Default, but good to know
     max-swallow-size: -1 # Allows unlimited size for multipart requests, if needed
@@ -9,10 +9,7 @@ server:
 spring:
   config:
     import:
-      - optional:file:./config/oauth.yml
       - optional:file:./config/database.yml
-  application: 
-    name: api
   web:
     resources:
       static-locations: classpath:/static/,classpath:/images/,file:./uploads/
@@ -46,6 +43,9 @@ logging:
   level:
     org:
       springframework:
+        boot:
+          context:
+            config: DEBUG
         web:
           multipart: DEBUG
           servlet:
