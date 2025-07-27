@@ -9,6 +9,7 @@ server:
 spring:
   config:
     import:
+      - optional:file:./config/oauth.yml
       - optional:file:./config/database.yml
   web:
     resources:
