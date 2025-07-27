@@ -1,0 +1,55 @@
+.resume-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    height: 100%;
+}
+
+.resume-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 15px;
+    background: var(--color-bg-body);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.resume-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.resume-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.resume-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: var(--text-color);
+}
+
+.resume-meta {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: var(--gray);
+}
+
+.resume-skills {
+    margin: 10px 0;
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.resume-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}

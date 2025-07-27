@@ -1,0 +1,118 @@
+@import url(footer.css);
+@import url(header.css);
+@import url(lang-switcher.css);
+@import url(slider-switcher.css);
+@import url(rating.css);
+@import url(notification.css);
+@import url(buttons.css);
+@import url(modal.css);
+@import url(text-decorations.css);
+@import url(account-base.css);
+@import url(breadcrumbs.css);
+@import url(listings-management.css);
+@import url(upload-controls.css);
+@import url(author-info-sidebar.css);
+@import url(reviews.css);
+@import url(data-fields.css);
+@import url(animations.css);
+@import url(avatar-types.css);
+@import url(simple-components.css);
+@import url(../../variables.css);
+
+@import url(font-awesome-overwrite.css);
+
+@import url(specials/media.css);
+
+@import url(cards/listing-card.css);
+@import url(cards/resume-card.css);
+
+/* Базовые сбросы */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    scrollbar-color: var(--border-color) var(--color-bg-body);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--background);
+    max-width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+a {
+    text-decoration: none;
+    transition: all 0.3s ease;
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -0.75rem;
+}
+
+.col {
+    flex: 1;
+    padding: 0 0.75rem;
+}
+
+li {
+    margin-left: 2.5rem;
+}
+
+.admin-form-control input[type="file"] {
+    display: none;
+}
+
+.card {
+    background: var(--color-bg-body);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 4px var(--shadow-color);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-title a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.card-title a:hover {
+    color: var(--primary);
+}
+
+.card-footer {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    color: var(--gray);
+}

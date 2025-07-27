@@ -1,0 +1,18 @@
+.media-only-flex,
+.media-only-block {
+    display: none;
+}
+
+@media (max-width: 992px) {
+    .media-only-flex {
+        display: flex;
+    }
+
+    .media-only-block {
+        display: block;
+    }
+
+    .normal-only {
+        display: none;
+    }
+}

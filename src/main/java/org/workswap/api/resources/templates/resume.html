@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{title.resume.view}">Просмотр резюме | WorkSwap</title>
+    <link href="/css/public/pages/resume-view-page.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="/favicon.ico">
+</head>
+<body>
+<header>
+    <div th:replace="~{fragments/public/header :: header}"></div>
+</header>
+
+<!-- Основной контент -->
+<div class="resume-container">
+    <div class="resume-layout">
+        <!-- Основное содержимое -->
+        <main class="resume-main">
+            <!-- Хлебные крошки -->
+            <!-- <nav class="breadcrumbs">
+                <a href="/catalog" th:text="#{breadcrumbs.catalog}">Каталог</a>
+                <span> / </span>
+                <a th:href="@{/catalog(category='find-help')}" th:text="#{category.helper}">Найти помощника</a>
+                <span> / </span>
+                <span th:text="${resume.profession}">Профессия</span>
+            </nav> -->
+
+            <!-- Заголовок резюме -->
+            <div class="resume-header">
+                <h1 th:text="${resume.profession}">Профессия</h1>
+                <div class="resume-meta">
+                    <span class="resume-date" th:text="${#temporals.format(resume.createdAt, 'dd.MM.yyyy')}">01.01.2023</span>
+                    <span class="resume-status" th:classappend="${resume.published} ? 'published' : 'draft'"
+                          th:text="${resume.published} ? #{resume.status.published} : #{resume.status.draft}">
+                        Опубликовано
+                    </span>
+                </div>
+            </div>
+
+            <!-- Основная информация о кандидате -->
+            <div class="resume-content">
+                <div class="resume-details">
+                    <!-- Опыт работы -->
+                    <section class="resume-section">
+                        <h2 th:text="#{resume.experience}">Опыт работы</h2>
+                        <div class="experience-item">
+                            <span class="experience-years" th:text="${resume.experience} + ' ' + #{resume.experience.years}">5 лет</span>
+                        </div>
+                    </section>
+
+                    <!-- Образование -->
+                    <section class="resume-section">
+                        <h2 th:text="#{resume.education}">Образование</h2>
+                        <p th:text="#{'education.' + ${resume.education}}">Высшее</p>
+                    </section>
+
+                    <!-- Навыки -->
+                    <section class="resume-section" th:if="${resume.skills}">
+                        <h2 th:text="#{resume.skills}">Ключевые навыки</h2>
+                        <div class="skills-list">
+                            <span th:each="skill : ${#strings.arraySplit(resume.skills, ',')}"
+                                  th:text="${skill.trim()}"
+                                  class="skill-tag">Навык</span>
+                        </div>
+                    </section>
+
+                    <!-- О себе -->
+                    <section class="resume-section" th:if="${resume.about}">
+                        <h2 th:text="#{resume.about}">О себе</h2>
+                        <p th:text="${resume.about}">Описание о себе.</p>
+                    </section>
+
+                    <!-- Языки -->
+                    <section class="resume-section" th:if="${not resume.languages.isEmpty()}">
+                        <h2 th:text="#{resume.languages}">Знание языков</h2>
+                        <div class="languages-list">
+                            <div th:each="entry : ${resume.languages}" class="language-item">
+                                <span th:text="#{'language.' + ${entry.key}}">Язык</span> -
+                                <span th:text="#{'language.level.' + ${entry.value}}">Уровень</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Файл резюме -->
+                    <section class="resume-section" th:if="${resume.filePath}">
+                        <h2 th:text="#{resume.file}">Файл резюме</h2>
+                        <a th:href="@{'/resumes/download/' + ${resume.filePath}}"
+                           class="btn btn-outline-primary"
+                           th:text="#{resume.download}">
+                            Скачать резюме (PDF)
+                        </a>
+                    </section>
+                </div>
+
+                <!-- Боковая панель с контактами -->
+                <aside th:replace="~{fragments/public/author-info-sidebar :: userInfoSidebar(${resume.user})}"></aside>
+            </div>
+        </main>
+    </div>
+</div>
+<!-- Файл общих импортов -->
+<th:block th:replace="~{fragments/global-imports :: globalImports}" />
+</body>
+</html>

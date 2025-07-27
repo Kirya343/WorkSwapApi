@@ -1,0 +1,106 @@
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-outline-danger {
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--danger);
+    color: var(--color-bg-body);
+}
+
+.btn-outline-primary {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: var(--color-bg-body);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--color-bg-body);
+    border: 1px solid var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+.login-button {
+    display: flex;
+    flex-direction: row;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.telegram-button {
+    background-color: var(--telegram);
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 1rem;
+    width: 100%;
+    margin-top: 1.5rem;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.telegram-button :hover {
+    background-color: var(--telegram-hover);
+} 
+
+.search-btn {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Google button */
+.btn-google {
+    display: inline-block;
+    background-color: #4285F4;
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-google:hover {
+    background-color: #357ae8;
+}
+
+.btn-search {
+    border-radius: 0 var(--radius) var(--radius) 0;
+    border-left: none;
+    background-color: var(--primary);
+    color: var(--color-bg-body);
+    max-width: 80px;
+    margin-bottom: 0;
+}

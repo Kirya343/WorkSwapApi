@@ -1,0 +1,71 @@
+<div th:fragment="termsModal(user)" class="modal-overlay" id="modal">
+    <!-- Условия использования -->
+    <div id="modalCard" class="modal">
+        <div class="modal-content">
+            <h2 th:text="#{terms.modal.title}">Условия использования</h2>
+            <p th:text="#{terms.modal.text}">Мы обновили наши условия использования.</p>
+            <p th:text="#{terms.modal.text2}">Пожалуйста, ознакомьтесь с ними и подтвердите, что вы согласны с новыми условиями.</p>
+            <div class="modal-links">
+                <a href="/terms" target="_blank" th:text="#{terms}"></a>
+                <a href="/privacy-policy" target="_blank" th:text="#{privacy.title}"></a>
+            </div>
+            <button class="btn btn-primary terms-accept"  id="acceptTermsBtn" th:text="#{terms.modal.accept}">Принять</button>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function openModal() {
+            document.getElementById("modal").style.display = "flex";
+            setTimeout(() => {
+                document.getElementById("modalCard").classList.add('active');
+            }, 10);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            /*<![CDATA[*/
+            const termsAccepted = /*[[${user.termsAccepted}]]*/ false;
+            const user = /*[[${user != null}]]*/ false;
+            /*]]>*/
+
+            if (user && !termsAccepted) {
+                const modal = document.getElementById('modalCard');
+                const acceptBtn = document.getElementById('acceptTermsBtn');
+
+                document.getElementById("modal").style.display = "flex";
+                setTimeout(() => {
+                    modal.classList.add('active');
+                }, 10);
+
+                acceptBtn.addEventListener('click', function () {
+                    // Получаем CSRF токен из мета-тегов
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                    fetch('/api/users/accept-terms', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
+                        },
+                        credentials: 'same-origin', // важно для передачи cookie сессии
+                        body: JSON.stringify({
+                            termsAcceptanceDate: new Date().toISOString(), // исправлено
+                            termsAccepted: true
+                        })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('Ошибка при принятии условий.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                        alert('Ошибка подключения к серверу.');
+                    });
+                });
+            }
+        });
+    </script>
+</div>

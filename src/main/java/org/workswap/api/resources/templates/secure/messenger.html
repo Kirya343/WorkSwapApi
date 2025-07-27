@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сообщения | WorkSwap</title>
+    <link href="/css/public/pages/account/messenger-page.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link rel="icon" href="/favicon.ico">
+</head>
+<body>
+<header>
+    <!-- Хедер страниц аккаунта -->
+    <div th:replace="~{fragments/public/header :: header}"></div>
+</header>
+
+<!-- Основной контент -->
+<div class="account-container">
+    <div class="account-layout">
+        <!-- Сайдбар меню -->
+        <aside th:replace="~{fragments/account/account-sidebar :: sidebar}"></aside>
+
+        <!-- Основное содержимое -->
+        <main class="account-main">
+            <div class="account-header">
+                <h2 th:text="#{my.messages}">Сообщения</h2>
+                <!-- <div class="search-container">
+                    <input type="text" th:placeholder="#{my.messages.search}" class="search-input">
+                    <button class="search-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                    </button>
+                </div> -->
+                <button id="dialogsToggleBtn" class="btn btn-primary mobile-dialogs-toggle">
+                    <i class="fa fa-comments"></i>
+                </button>
+            </div>
+
+            <div class="messenger-container">
+                <!-- Список диалогов -->
+                <div class="dialogs-list">
+
+                    <!-- Если нет диалогов -->
+                    <div th:if="${#lists.isEmpty(conversations)}" class="no-dialogs" id="no-dialogs">
+                        <p th:text="#{my.messages.no-messages}">У вас пока нет сообщений.</p>
+                        <p th:text="#{my.messages.start.dialog}">Начните общение, ответив на объявление или отправив сообщение пользователю.</p>
+                    </div>
+                </div>
+
+                <!-- Окно чата --> <!--th:if="${selectedConversation != null}"-->
+                <div class="chat-window">
+                    <div class="chat-container"
+                         data-conversation-id="${selectedConversation.id}">
+                        <div class="chat-header">
+                            <div class="chat-user">
+                                <img class="avatar p50-avatar" id="interlocutorAvatar" onerror="this.src='/images/avatar-placeholder.png'" src="/images/avatar-placeholder.png" alt="Avatar" />
+                                <div>
+                                    <h4 id="interlocutorName"></h4>
+                                    <p class="user-status"></p>
+                                </div>
+                            </div>
+                            <!--<div class="chat-actions">
+                                <button class="btn btn-outline-primary btn-sm" th:text="#{my.messages.button.profile}">Профиль</button>
+                                <button class="btn btn-outline-danger btn-sm" th:text="#{my.messages.button.block}">Заблокировать</button>
+                            </div>-->
+                        </div>
+
+                        <div th:fragment="messages-container" class="messages-container" id="messages-container">
+                            <div class="message-date">Сегодня</div>
+
+                            <th:block th:if="${#lists.isEmpty(messages)}">
+                                <p class="no-messages" th:text="#{my.messages.empty.dialog}">Нет сообщений</p>
+                            </th:block>
+
+                            <div th:each="message : ${messages}"
+                                 th:class="${message.isOwn(user)} ? 'message-out' : 'message-in'"
+                                 class="message">
+                                <div class="message-content">
+                                    <p th:text="${message.text}">Текст сообщения</p>
+                                    <span class="message-time"
+                                          th:text="${#temporals.format(message.sentAt, 'HH:mm')}">12:30</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="message-input-container">
+                            <textarea id="message-input" th:placeholder="#{my.messages.send.placeholder}" class="message-input"></textarea>
+                            <button id="send-btn" class="img-send-btn"> <!--th:text="#{my.messages.button.send}"-->
+                                <img src="/images/send-btn.png" alt="Отправить">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<!-- Файл импортов специально для мессенджера -->
+<th:block th:replace="~{fragments/global-imports :: messengerImports(${user})}" />
+</body>
+</html>

@@ -1,0 +1,55 @@
+<aside class="listing-sidebar" th:fragment="userInfoSidebar(user)">
+    <div class="seller-card" th:if="${user != null}">
+        <img th:replace="~{fragments/small-components :: avatar(user=${user}, size='100', class='seller-avatar')}"></img>
+        <div class="seller-info">
+            <h4 th:text="${user.name ?: 'Неизвестный автор'}">Иван Иванов</h4>
+            <div class="seller-rating">
+                <span th:text="#{listing.rating}">Рейтинг: </span>
+                <span th:text="${user.averageRating}">4.5</span> ★
+            </div>
+        </div>
+        <div class="seller-actions">
+            <div th:if="${isAuthenticated}">
+                <!-- Показываем кнопки только если пользователь не владелец -->
+                <div th:unless="${isOwner}">
+                    <form action="/secure/messenger/chat" method="get">
+                        <input type="hidden" name="sellerId" th:value="${user.id}">
+                        <button type="submit" class="btn btn-primary" th:text="#{listing.write}">Написать сообщение</button>
+                    </form>
+                </div>
+
+                <a th:href="@{'/secure/listing/edit/' + ${listing.id}}"
+                    class="btn btn-primary"
+                    th:if="${isOwner and activePage == 'listing'}" th:text="#{listing.edit}"></a>
+            </div>
+            <div th:unless="${isAuthenticated}">
+                <a href="/login" class="btn btn-primary" th:text="#{login.to.write}">Войти, чтобы написать</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-card" th:if="${user != null}">
+        <h3 th:text="#{listing.author.contacts}">Контактная информация</h3>
+        <div class="contact-methods">
+            <div class="contact-item" th:if="${user.phoneVisible and user.phone != null}">
+                <span class="contact-icon">📱</span>
+                <span th:text="${user.phone}"></span>
+            </div>
+            <div class="contact-item" th:if="${user.emailVisible and user.email != null}">
+                <span class="contact-icon">✉️</span>
+                <span th:text="${user.email}"></span>
+            </div>
+            <span th:if="${!(user.phoneVisible and user.phone != null) and !(user.emailVisible and user.email != null)}" th:text="#{no.contacts}"></span>
+        </div>
+    </div>
+    
+    <div class="resume-card hover-animation-card" th:if="${resume != null and resume.published and activePage == 'profile'}" th:onclick="window.location.href = '/resume/' + [[${resume.id}]]">
+        <img th:replace="~{fragments/small-components :: avatar(user=${user}, size='70', class='')}"></img>
+        <div class="resume-info">
+            <h3 th:text="${resume.profession}">Специальность</h3>
+            <div class="resume-meta">
+                <span class="resume-education" th:text="#{'education.' + ${resume.education}}">Образование</span>
+            </div>
+        </div>
+    </div>
+</aside>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{title.catalog}">Каталог объявлений | WorkSwap</title>
+    <link href="/css/public/pages/catalog-page.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="/favicon.ico">
+</head>
+<body>
+<header>
+    <div th:replace="~{fragments/public/header :: header}"></div>
+</header>
+<div class="catalog-header py-3">
+    <div class="container">
+        <ul class="nav nav-pills justify-content-center" id="categoryMenu">
+            <li class="nav-item dropdown"
+                th:each="rootCategory : ${rootCategories}">
+
+                <!-- Корневая категория с подкатегориями -->
+                <a class="category-link nav-link dropdown-toggle"
+                   th:if="${not #lists.isEmpty(rootCategory.children)}"
+                   href="#"
+                   th:attr="data-category=${rootCategory.name}"
+                   th:text="#{'category.' + ${rootCategory.name}}"
+                   data-bs-toggle="dropdown"
+                   role="button"
+                   aria-expanded="false">
+                </a>
+
+                <!-- Корневая категория без подкатегорий -->
+                <a class="category-link nav-link"
+                   th:if="${#lists.isEmpty(rootCategory.children)}"
+                   href="#"
+                   th:attr="data-category=${rootCategory.name}"
+                   th:text="#{'category.' + ${rootCategory.name}}">
+                </a>
+
+                <!-- Подкатегории -->
+                <ul class="dropdown-menu" th:if="${not #lists.isEmpty(rootCategory.children)}">
+                    <li th:each="child : ${rootCategory.children}">
+                        <a class="category-link dropdown-item"
+                           href="#"
+                           th:attr="data-category=${child.name}"
+                           th:text="#{'category.' + ${child.name}}">
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- Основной контент -->
+<div class="catalog-container">
+    <div class="catalog-layout">
+        <!-- Сайдбар сортировки -->
+        <aside class="catalog-sidebar">
+            <div th:unless="${category == 'find-help'}" class="sorting-sidebar">
+                <h5 th:text="#{catalog.search.title}">Поиск</h5>
+                <form id="searchForm" method="get" action="/catalog">
+                    <div class="input-group">
+                        <input type="text" class="search-input" name="searchQuery" th:value="${searchQuery}" placeholder="Поиск...">
+                        <input type="hidden" name="category" th:value="${category}">
+                        <input type="hidden" name="sortBy" th:value="${sortBy}">
+                        <button class="btn btn-search" type="submit">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                <h5 th:text="#{catalog.sorting.title}">Сортировка</h5>
+                <div class="list-group list-group-flush">
+                    <a th:href="'#'"
+                       th:class="${sortBy == 'date'} ? 'list-group-item list-group-item-action sort-link active' : 'list-group-item list-group-item-action sort-link'" data-sort="date" th:text="#{catalog.sorting.date}">
+                        По дате
+                    </a>
+                    <a th:href="'#'"
+                       th:class="${sortBy == 'price'} ? 'list-group-item list-group-item-action sort-link active' : 'list-group-item list-group-item-action sort-link'" data-sort="price" th:text="#{catalog.sorting.price}">
+                        По цене
+                    </a>
+                    <a th:href="'#'"
+                       th:class="${sortBy == 'rating'} ? 'list-group-item list-group-item-action sort-link active' : 'list-group-item list-group-item-action sort-link'" data-sort="rating" th:text="#{catalog.sorting.rating}">
+                        По рейтингу
+                    </a>
+                    <a th:href="'#'"
+                       th:class="${sortBy == 'popularity'} ? 'list-group-item list-group-item-action sort-link active' : 'list-group-item list-group-item-action sort-link'" data-sort="popularity" th:text="#{catalog.sorting.popularity}">
+                        По популярности
+                    </a>
+                </div>
+
+                <h5 class="mt-4" th:text="#{catalog.sorting.filters}">Фильтры</h5>
+                <form id="filterForm" method="get" action="/catalog">
+                    <div class="form-check custom-checkbox">
+                        <input class="form-check-input" type="checkbox" id="filter2" name="hasReviews" th:checked="${hasReviews}">
+                        <label class="form-check-label" for="filter2">
+                            <span class="checkmark"></span>
+                            <span th:text="#{catalog.sorting.reviews}">С отзывами</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="sorting-sidebar sidebar-links">
+                <h5 th:text="#{catalog.sorting.links}">Полезные ссылки</h5>
+                <a href="info" class="catalog-sidebar-btn" th:text="#{links.info}"></a>
+                <a href="secure/account" class="catalog-sidebar-btn" th:text="#{links.account}"></a>
+                <a th:unless="${category == 'find-help'}" href="secure/listing/create" class="catalog-sidebar-btn" th:text="#{links.create.listing}"></a>
+                <a th:if="${category == 'find-help'}" href="secure/resume" class="catalog-sidebar-btn" th:text="#{links.my.resume}"></a>
+                <a href="secure/messenger" class="catalog-sidebar-btn" th:text="#{links.create.messenger}"></a>
+            </div>
+        </aside>
+
+        <main class="catalog-main">
+            
+            <div id="catalog-content"></div>
+
+            <!-- Пагинация -->
+            <!-- <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li th:class="${currentPage == 0} ? 'page-item disabled' : 'page-item'">
+                        <a th:href="@{/catalog(category=${category}, page=${currentPage - 1}, searchQuery=${searchQuery}, hasReviews=${hasReviews}, sortBy=${sortBy})}"
+                           class="page-link" th:text="#{pagination.back}">Назад</a>
+                    </li>
+                    <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:class="${currentPage == i} ? 'page-item active' : 'page-item'">
+                        <a th:href="@{/catalog(category=${category}, page=${i}, sortBy=${sortBy}, searchQuery=${searchQuery}, hasReviews=${hasReviews})}"
+                            class="page-link" th:text="${i + 1}"></a>
+                    </li>
+                    <li th:class="${currentPage == totalPages - 1} ? 'page-item disabled' : 'page-item'">
+                        <a th:href="@{/catalog(category=${category}, page=${currentPage + 1}, searchQuery=${searchQuery}, hasReviews=${hasReviews},sortBy=${sortBy})}"
+                           class="page-link" th:text="#{pagination.forward}">Вперед</a>
+                    </li>
+                </ul>
+            </nav> -->
+        </main>
+    </div>
+</div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+
+<!-- Загрузим наш React-компонент. -->
+<script src="/js/react/catalog-page.js"></script>
+
+<!-- Сортировка без перезагрузки -->
+<script th:inline="javascript">
+    function loadSortedCatalog() {
+        /* const params = new URLSearchParams(window.location.search); */
+
+        const category = document.querySelector(".category-link.active")?.getAttribute("data-category") || '';
+        const searchQuery = document.querySelector('input[name="searchQuery"]')?.value || "";
+        const hasReviews = document.querySelector('input[name="hasReviews"]')?.checked;
+
+        const activeSort = document.querySelector(".sort-link.active")?.getAttribute("data-sort") || "date";
+
+        const params = {};
+
+        if (category) params.category = category;
+        if (activeSort) params.sortBy = activeSort;
+        if (searchQuery) params.searchQuery = searchQuery;
+        if (hasReviews) params.hasReviews = "on";
+
+        const queryString = new URLSearchParams(params);
+
+        const newUrl = window.location.pathname + (queryString.toString() ? "?" + queryString.toString() : "");
+        console.log(newUrl);
+        window.history.pushState({}, "", newUrl);
+
+        fetch(`/catalog/sort?${queryString.toString()}`, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+            .then(response => response.text())
+            .then(html => {
+                document.querySelector("#catalog-content").innerHTML = html;
+            })
+            .catch(error => console.error("Ошибка при сортировке:", error));
+    }
+
+    function getCategoryFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('category') || null; // если нет, то пустая строка
+    }
+
+    function categoryControl(e) {
+        e.preventDefault();
+        document.querySelectorAll(".category-link").forEach(btn => btn.classList.remove("active"));
+        this.classList.add("active");
+    }
+
+    function updateActiveCategories() {
+
+        const currentCategory = getCategoryFromUrl();
+
+        // Найдём все элементы с data-category
+        const menuItems = document.querySelectorAll('#categoryMenu [data-category]');
+
+        console.log(menuItems)
+
+        // Сбросим класс active у всех
+        menuItems.forEach(item => item.classList.remove('active'));
+
+        // Найдём и активируем нужный пункт меню
+        let activeItem = null;
+
+        menuItems.forEach(item => {
+            if (item.getAttribute('data-category') === currentCategory) {
+                activeItem = item;
+            }
+        });
+
+        if (activeItem) {
+            activeItem.classList.add('active');
+
+            // Добавим active родителю, если это вложенный пункт
+            const parentLi = activeItem.closest('li.nav-item.dropdown');
+            if (parentLi) {
+                parentLi.classList.add('active');
+            }
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Поддержка кликов по категориям
+        updateActiveCategories();
+        loadSortedCatalog();
+
+        // Поддержка сортировки, поиска, фильтра
+        document.querySelectorAll(".sort-link").forEach(link => {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                document.querySelectorAll(".sort-link").forEach(btn => btn.classList.remove("active"));
+                this.classList.add("active");
+                loadSortedCatalog();
+            });
+        });
+
+        // Поддержка сортировки, поиска, фильтра
+        document.querySelectorAll(".category-link").forEach(link => {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+
+                const isActive = this.classList.contains("active");
+
+                if (isActive) {
+                    document.querySelectorAll(".category-link").forEach(btn => btn.classList.remove("active"));
+                    loadSortedCatalog();
+                } else {
+                    document.querySelectorAll(".category-link").forEach(btn => btn.classList.remove("active"));
+                    this.classList.add("active");
+                    loadSortedCatalog();
+                }
+            });
+        });
+
+        const searchForm = document.getElementById("searchForm");
+        if (searchForm) {
+            searchForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                loadSortedCatalog();
+            });
+        }
+
+        const reviewsCheckbox = document.querySelector('input[name="hasReviews"]');
+        if (reviewsCheckbox) {
+            reviewsCheckbox.addEventListener("change", function () {
+                loadSortedCatalog();
+            });
+        }
+    });
+
+    window.addEventListener("popstate", function () {
+        loadSortedCatalog();
+    });
+</script>
+<!-- Файл общих импортов -->
+<th:block th:replace="~{fragments/global-imports :: globalImports}"/>
+</body>
+</html>

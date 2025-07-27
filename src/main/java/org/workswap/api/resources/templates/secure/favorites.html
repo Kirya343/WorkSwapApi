@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <title th:text="#{title.favorites}">Избранное | WorkSwap</title>
+    <link href="/css/public/pages/account/favorite-listings-page.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="/favicon.ico">
+</head>
+<body>
+<header>
+    <!-- Хедер страниц аккаунта -->
+    <div th:replace="~{fragments/public/header :: header}"></div>
+</header>
+
+<!-- Основной контент -->
+<!-- favorites.html -->
+<section class="account-container">
+    <div class="account-layout">
+        <!-- Сайдбар меню -->
+        <aside th:replace="~{fragments/account/account-sidebar :: sidebar}"></aside>
+
+        <!-- Основной блок -->
+        <main class="account-main">
+            <div class="account-header">
+                <h2 th:text="#{my.favorites}">Избранные</h2>
+            </div>
+
+            <div class="listings-grid">
+                <!-- Динамические карточки объявлений -->
+                <article th:replace="~{fragments/cards/listing-card :: listingCardAccount}"></article>
+            </div>
+
+            <!-- Если нет избранных -->
+            <div class="no-listings">
+                <a href="/catalog" class="btn btn-primary" th:text="#{go.to.catalog}">Перейти к объявлениям</a>
+            </div>
+        </main>
+    </div>
+</section>
+<!-- Файл импортов для защищённых страниц -->
+<th:block th:replace="~{fragments/global-imports :: secureImports(${user})}" />
+</body>
+</html>

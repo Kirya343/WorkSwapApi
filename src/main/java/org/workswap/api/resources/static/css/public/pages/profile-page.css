@@ -1,0 +1,11 @@
+@import url(catalog-page.css);
+@import url(listing-page.css);
+
+.resume-card-link {
+    display: flex;
+    flex-direction: row;
+}
+
+.resume-card {
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
