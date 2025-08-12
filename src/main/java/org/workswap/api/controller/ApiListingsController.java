@@ -1,17 +1,36 @@
 package org.workswap.api.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.workswap.common.dto.ListingDTO;
 import org.workswap.core.services.ListingService;
+import org.workswap.core.services.UserService;
 import org.workswap.datasource.central.model.Listing;
+import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.chat.Chat;
+import org.workswap.datasource.central.model.listingModels.Category;
+import org.workswap.datasource.central.model.listingModels.Location;
+import org.workswap.datasource.central.repository.CategoryRepository;
+import org.workswap.datasource.central.repository.LocationRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -21,25 +40,86 @@ public class ApiListingsController {
     
     private final ChatRepository chatRepository;
     private final ListingService listingService;
+    private final LocationRepository locationRepository;
+    private final UserService userService;
+    private final CategoryRepository categoryRepository;
 
     @GetMapping("/{chatId}/get")
-    public String getListing(@PathVariable Long chatId, Locale locale, Model model) {
+    public ResponseEntity<?> getListing(@PathVariable Long chatId, @RequestParam("locale") String lang, Model model) {
 
         Chat conv = chatRepository.findById(chatId).orElse(null);
 
-        Listing listing = null;
+        ListingDTO listing = null;
         if (conv != null) {
-            listing = conv.getListing();
+            listing = listingService.convertToDTO(conv.getListing(), Locale.of(lang));
         }
 
         if (listing == null) {
-            return "fragments/empty :: empty";
+            return ResponseEntity.badRequest().build();
         }
 
-        listingService.localizeListing(listing, locale);
+        return ResponseEntity.ok().body(listing);
+    }
 
-        model.addAttribute("listing", listing);
+    @GetMapping("/catalog")
+    public ResponseEntity<?> sortCatalogAjax(
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String searchQuery,
+            @RequestParam(required = false, defaultValue = "false") boolean hasReviews,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Long listingId,
+            @RequestParam("locale") String lang,
+            @RequestHeader(value = "X-User-Sub", required = false) String userSub,
+            Model model,
+            HttpServletRequest request
+    ) {
+        try {
+            User user = null;
+            List<String> languages = new ArrayList<>();
+            Location locationType = null;
+            if (userSub != null) {
+                user = userService.findUser(userSub);
+                languages = user.getLanguages();
+            }
 
-        return "fragments/cards/listing-card :: listingCard";
+            if (location == null && user != null) {
+                locationType = user.getLocation();
+            } else {
+                locationType = locationRepository.findByName(location);
+            }
+
+            if (!languages.contains(lang)) {
+                languages.add(lang);
+            }
+
+            Pageable pageable = PageRequest.of(page, 12);
+
+            Category categoryType = categoryRepository.findByName(category);
+
+            Page<Listing> listingsPage = listingService.findPageOfSortedListings(categoryType, sortBy, pageable, locationType, searchQuery, hasReviews, languages);
+
+            List<ListingDTO> listings = new ArrayList<>();
+            for(Listing l : listingsPage.getContent()) {
+                listings.add(listingService.convertToDTO(l, Locale.of(lang)));
+            }
+
+            Map<String, Object> response = new HashMap<>();
+
+            response.put("listings", listings);
+            response.put("mainListingId", listingId);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("Ошибка в API каталога: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Ошибка загрузки каталога");
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
     }
 }

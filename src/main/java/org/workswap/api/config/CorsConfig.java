@@ -15,7 +15,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://workswap.com", "https://test.workswap.com", "https://localhost:8080") // твой сайт
+                        .allowedOrigins("https://workswap.com", "https://test.workswap.com", "http://localhost:8080") // твой сайт
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowCredentials(true);
             }

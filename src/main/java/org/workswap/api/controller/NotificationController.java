@@ -3,8 +3,6 @@ package org.workswap.api.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.workswap.datasource.central.model.User;
 import org.workswap.common.dto.FullNotificationDTO;
@@ -24,17 +22,17 @@ public class NotificationController {
     private final UserService userService;
 
     @GetMapping("/for-user/{id}")
-    public List<FullNotificationDTO> getNotification(@PathVariable Long id, @AuthenticationPrincipal OAuth2User oauth2User) {
+    public List<FullNotificationDTO> getNotification(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
         User user = userService.findUser(id.toString());
-        if (oauth2User != null) {
-            User principal = userService.findUserFromOAuth2(oauth2User);
 
-            if(user == principal) {
+        if (userSub != null) {
+            if(user == userService.findUser(userSub)) {
                 return notificationRepository.findByRecipient(user).stream()
                     .map(notification -> notificationService.toDTO(notification))
                     .collect(Collectors.toList());
             } 
         }
+        
         return null;
     }
 }

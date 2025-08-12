@@ -6,10 +6,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.datasource.central.model.User;
@@ -23,7 +23,6 @@ import org.workswap.core.services.ChatService;
 
 import lombok.RequiredArgsConstructor;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,10 +41,9 @@ public class ApiChatController {
     private final ChatParticipantRepository chatParticipantRepository;
     private final MessageSource messageSource;
 
-    @PreAuthorize("hasAuthority('VIEW_MESSENGER_PAGE')")
-    @GetMapping("/chat/{chatId}/messages")
-    public ResponseEntity<List<MessageDTO>> getChatMessages(@PathVariable Long chatId, Principal principal) {
-        User currentUser = userService.findUser(principal.getName());
+    @GetMapping("/{chatId}/messages")
+    public ResponseEntity<List<MessageDTO>> getChatMessages(@PathVariable Long chatId, @RequestHeader("X-User-Sub") String userSub) {
+        User currentUser = userService.findUser(userSub);
 
         Chat chat = chatService.getChatById(chatId);
 
@@ -79,10 +77,9 @@ public class ApiChatController {
         return ResponseEntity.ok(messageDTOs);
     }
 
-    @PreAuthorize("hasAuthority('VIEW_MESSENGER_PAGE')")
     @GetMapping("/{id}/chat-terms")
-    public ResponseEntity<?> getTermsState(@PathVariable Long id, Principal principal, Locale locale) {
-        User user = userService.findUser(principal.getName());
+    public ResponseEntity<?> getTermsState(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub, Locale locale) {
+        User user = userService.findUser(userSub);
         Chat chat = chatRepository.findById(id).orElse(null);
 
         ChatParticipant participant = chatParticipantRepository.findByUserAndChat(user, chat);
@@ -96,10 +93,9 @@ public class ApiChatController {
                                         "messageAccept", messageSource.getMessage("security.confirm", null, locale)));
     }
 
-    @PreAuthorize("hasAuthority('VIEW_MESSENGER_PAGE')")
     @GetMapping("/{id}/getInterlocutorInfo")
-    public InterlocutorInfoDTO getInterlocutorInfo(@PathVariable Long id, Principal principal) {
-        User user = userService.findUser(principal.getName());
+    public InterlocutorInfoDTO getInterlocutorInfo(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
+        User user = userService.findUser(userSub);
         Chat chat = chatRepository.findById(id).orElse(null);
         ChatParticipant participant = chatParticipantRepository.findByUserAndChat(user, chat);
         
@@ -113,8 +109,8 @@ public class ApiChatController {
     }
 
     @PostMapping("/{id}/accept-terms")
-    public ResponseEntity<?> acceptTerms(@PathVariable Long id, Principal principal) {
-        User user = userService.findUser(principal.getName());
+    public ResponseEntity<?> acceptTerms(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
+        User user = userService.findUser(userSub);
         Chat chat = chatRepository.findById(id).orElse(null);
         ChatParticipant participant = chatParticipantRepository.findByUserAndChat(user, chat);
         
@@ -127,9 +123,9 @@ public class ApiChatController {
     }
 
     @PostMapping("/temporary")
-    public ResponseEntity<Void> deleteTemporaryChat(Principal principal) {
+    public ResponseEntity<Void> deleteTemporaryChat(@RequestHeader("X-User-Sub") String userSub) {
 
-        User user = userService.findUser(principal.getName());
+        User user = userService.findUser(userSub);
         logger.debug("Запрос на удаление временных диалогов от пользователя: {}", user.getName());
 
         List<Chat> chats = chatRepository.findAllByParticipant(user);
