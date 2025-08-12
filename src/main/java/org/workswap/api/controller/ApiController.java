@@ -1,4 +1,4 @@
-package org.workswap.api.controller.components;
+package org.workswap.api.controller;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
@@ -44,6 +45,7 @@ public class ApiController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasAuthority('CONNECT_TELEGRAM')")
     @PostMapping("/api/telegram/connect")
     public ResponseEntity<?> telegramConnect(@AuthenticationPrincipal OAuth2User oAuth2User) {
         User user = userService.findUserFromOAuth2(oAuth2User);

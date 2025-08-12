@@ -1,4 +1,4 @@
-package org.workswap.api.controller.components;
+package org.workswap.api.controller;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package org.workswap.api.controller.components;
+package org.workswap.api.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,7 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.workswap.datasource.central.model.User;
-import org.workswap.datasource.central.model.DTOs.FullNotificationDTO;
+import org.workswap.common.dto.FullNotificationDTO;
 import org.workswap.datasource.central.repository.NotificationRepository;
 import org.workswap.core.services.NotificationService;
 import org.workswap.core.services.UserService;

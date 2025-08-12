@@ -1,4 +1,4 @@
-package org.workswap.api.controller.components;
+package org.workswap.api.controller;
 
 import java.util.List;
 import java.util.Locale;
@@ -6,13 +6,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.workswap.datasource.central.model.DTOs.CategoryDTO;
-import org.workswap.datasource.central.model.listingModels.Category;
-import org.workswap.datasource.central.repository.CategoryRepository;
+import org.workswap.common.dto.CategoryDTO;
 import org.workswap.core.services.CategoryService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,18 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/categories")
 public class ApiCategoryController {
     
-    private final CategoryRepository categoryRepository;
     private final CategoryService categoryService;
-
-    // Создание новой категории
-    @PostMapping
-    public Category createCategory(@RequestBody CategoryDTO dto) {
-        Category parent = categoryService.findCategory(dto.getParentId().toString());
-        
-        Category category = new Category(dto.getName(), parent);
-        category.setLeaf(dto.isLeaf());
-        return categoryRepository.save(category);
-    }
 
     @GetMapping("/children/{parentId}")
     public List<CategoryDTO> getChildCategories(@PathVariable Long parentId, Locale locale) {

@@ -1,4 +1,4 @@
-package org.workswap.api.controller.components;
+package org.workswap.api.controller;
 
 import java.util.List;
 import java.util.Locale;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.workswap.datasource.central.model.DTOs.LocationDTO;
+import org.workswap.common.dto.LocationDTO;
 import org.workswap.datasource.central.repository.LocationRepository;
 import org.workswap.core.services.LocationService;
 
