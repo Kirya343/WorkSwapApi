@@ -30,6 +30,7 @@ import org.workswap.datasource.central.repository.CategoryRepository;
 import org.workswap.datasource.central.repository.LocationRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -44,6 +45,7 @@ public class ApiListingsController {
     private final UserService userService;
     private final CategoryRepository categoryRepository;
 
+    @PermitAll
     @GetMapping("/{chatId}/get")
     public ResponseEntity<?> getListing(@PathVariable Long chatId, @RequestParam("locale") String lang, Model model) {
 

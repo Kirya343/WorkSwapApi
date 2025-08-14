@@ -28,7 +28,7 @@
 		<dependency>
             <groupId>org.workswap</groupId>
             <artifactId>workswap-core</artifactId>
-            <version>1.0.24</version>
+            <version>1.0.25</version>
         </dependency>
 
 		<dependency>
@@ -59,6 +59,10 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>

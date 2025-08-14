@@ -6,6 +6,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,6 +41,7 @@ public class ApiChatController {
     private final ChatRepository chatRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final MessageSource messageSource;
+
 
     @GetMapping("/{chatId}/messages")
     public ResponseEntity<List<MessageDTO>> getChatMessages(@PathVariable Long chatId, @RequestHeader("X-User-Sub") String userSub) {
@@ -93,6 +95,7 @@ public class ApiChatController {
                                         "messageAccept", messageSource.getMessage("security.confirm", null, locale)));
     }
 
+    @PreAuthorize("hasAuthority('CHAT_GET_INTERLOCUTOR')")
     @GetMapping("/{id}/getInterlocutorInfo")
     public InterlocutorInfoDTO getInterlocutorInfo(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
         User user = userService.findUser(userSub);
