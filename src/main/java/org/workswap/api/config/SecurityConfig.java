@@ -15,11 +15,7 @@ import org.workswap.api.component.RolesPermissionsConverter;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(
-    jsr250Enabled = true,     // @PermitAll, @RolesAllowed
-    securedEnabled = true,    // @Secured
-    prePostEnabled = true     // @PreAuthorize, @PostAuthorize
-)
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -28,7 +24,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
             )
