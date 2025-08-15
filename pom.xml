@@ -11,7 +11,7 @@
 	</parent>
 
 	<groupId>org.workswap</groupId>
-	<artifactId>api</artifactId>
+	<artifactId>WSApi</artifactId>
 	<version>1.0</version>
 	<name>api</name>
 
@@ -28,7 +28,7 @@
 		<dependency>
             <groupId>org.workswap</groupId>
             <artifactId>workswap-core</artifactId>
-            <version>1.1.1</version>
+            <version>1.1.3</version>
         </dependency>
 
 		<dependency>
