@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/locations")
-public class ApiLocationsController {
+public class ApiLocationController {
     
     private final LocationService locationService;
     private final LocationRepository locationRepository;
@@ -34,3 +34,4 @@ public class ApiLocationsController {
         return locationService.toDTO(locationRepository.findById(locationId).orElse(null));
     }
 }
+

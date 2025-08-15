@@ -13,8 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/api/listing")
-public class ApiListingsController {
+public class ApiListingController {
     
     private final ChatRepository chatRepository;
     private final ListingService listingService;
@@ -122,6 +124,49 @@ public class ApiListingsController {
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorResponse);
+        }
+    }
+
+    @PostMapping("/{id}/favorite")
+    public ResponseEntity<?> toggleFavorite(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
+        User user = userService.findUser(userSub);
+        Listing listing = listingService.findListing(id.toString());
+
+        listingService.toggleFavorite(user, listing);
+        return  ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/favorite/status")
+    public ResponseEntity<?> isFavorite(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
+        User user = userService.findUser(userSub);
+        Listing listing = listingService.findListing(id.toString());
+
+        boolean isFavorite = listingService.isFavorite(user, listing);
+        return  ResponseEntity.ok(isFavorite);
+    }
+
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<?> deleteListing(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Sub") String userSub
+    ) {
+        try {
+            Listing listing = listingService.findListing(id.toString());
+
+            // Проверка авторства
+            User user = userService.findUser(userSub);
+
+            if (!listing.getAuthor().equals(user)) {
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Вы не можете удалить это объявление");
+            }
+
+            if (listing.getAuthor().equals(user)) {
+                listingService.deleteListing(listing);
+                return ResponseEntity.ok().body("Объявление успешно удалено!");
+            }
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.ok().body("Ошибка при удалении объявления: " + e.getMessage());
         }
     }
 }
