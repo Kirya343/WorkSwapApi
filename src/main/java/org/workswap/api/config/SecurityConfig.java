@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.unit.DataSize;
-import org.workswap.api.component.RolesPermissionsConverter;
+import org.workswap.core.services.components.RolesPermissionsConverter;
 
 @Configuration
 @EnableWebSecurity
