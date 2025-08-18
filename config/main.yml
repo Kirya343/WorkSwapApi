@@ -11,11 +11,7 @@ spring:
     active: "api"
   web:
     resources:
-      static-locations: classpath:/static/,classpath:/images/,file:./uploads/
-  thymeleaf:
-    prefix: classpath:/templates/
-    suffix: .html
-    cache: false # Для разработки
+      static-locations: classpath:/static/,classpath:/images/
   mvc:
     static-path-pattern: /**
   servlet:
