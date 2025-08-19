@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -167,6 +168,28 @@ public class ApiListingController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.ok().body("Ошибка при удалении объявления: " + e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasAuthority('UPDATE_LISTING')")
+    @PostMapping("/update/{id}")
+    public ResponseEntity<?> modifyListing(@PathVariable Long id) {
+        try {
+            listingService.save(listingService.findListing(id.toString()));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.ok().body("Ошибка при обновлении объявления: " + e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasAuthority('DELETE_LISTING')")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteNews(@PathVariable Long id) {
+        try {
+            listingService.deleteListing(listingService.findListing(id.toString()));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.ok().body("Ошибка при  объявления: " + e.getMessage());
         }
     }
 }

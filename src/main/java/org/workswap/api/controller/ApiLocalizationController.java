@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.workswap.core.services.LocalizationService;
 
 import lombok.RequiredArgsConstructor;
@@ -135,7 +134,7 @@ public class ApiLocalizationController {
 
     @PreAuthorize("hasAuthority('CREATE_LOCALIZATION_GROUP')")
     @PostMapping("/create-group")
-    public ResponseEntity<?> createLocalizationGroup(@RequestParam String group, RedirectAttributes redirectAttributes) {
+    public ResponseEntity<?> createLocalizationGroup(@RequestParam String group) {
         try {
             Path path = Paths.get("localization/" + group);
             Files.createDirectory(path);
@@ -151,7 +150,7 @@ public class ApiLocalizationController {
 
     @PreAuthorize("hasAuthority('DELETE_LOCALIZATION_GROUP')")
     @PostMapping("/delete-group")
-    public ResponseEntity<?> deleteLocalizationGroup(@RequestParam String group, RedirectAttributes redirectAttributes) {
+    public ResponseEntity<?> deleteLocalizationGroup(@RequestParam String group) {
         try {
             Path dir = Paths.get("localization/" + group);
             Files.walk(dir)
@@ -173,7 +172,7 @@ public class ApiLocalizationController {
 
     @PreAuthorize("hasAuthority('DELETE_LOCALIZATION_POINT')")
     @PostMapping("/delete")
-    public ResponseEntity<?> deleteLocalizationPoint(@RequestParam String code, RedirectAttributes redirectAttributes) {
+    public ResponseEntity<?> deleteLocalizationPoint(@RequestParam String code) {
         try {
             localizationService.removeTranslation("localization", code);
 

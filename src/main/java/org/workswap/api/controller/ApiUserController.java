@@ -7,12 +7,16 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -91,5 +95,32 @@ public class ApiUserController {
         userService.deleteUser(userService.findUser(userSub));
 
         return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAuthority('UPDATE_USER')")
+    @PostMapping("/update/{id}")
+    public ResponseEntity<?> modifyUser(@PathVariable Long id,
+                           @ModelAttribute User user) {
+        try {
+            userService.save(user);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "Ошибка при обновлении: " + e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("hasAuthority('DELETE_USER')")
+    @GetMapping("/delete/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(userService.findUser(id.toString()));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "Ошибка при удалении: " + e.getMessage()));
+        }
     }
 }

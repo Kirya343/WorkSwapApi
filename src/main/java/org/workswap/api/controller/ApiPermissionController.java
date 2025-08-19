@@ -5,13 +5,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.workswap.core.services.UserService;
+import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.user.Permission;
 import org.workswap.datasource.central.model.user.Role;
 import org.workswap.datasource.central.repository.PermissionRepository;
@@ -26,6 +32,8 @@ public class ApiPermissionController {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+
+    private final UserService userService;
 
     //пометить пермишном
     @GetMapping("/{id}")
@@ -81,8 +89,49 @@ public class ApiPermissionController {
 
         } catch (Exception e) {
             System.err.println("Ошибка при сохранении разрешений: " + e.getMessage());
-            return ResponseEntity.internalServerError()
-                .body("Внутренняя ошибка сервера");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Внутренняя ошибка сервера");
         }
+    }
+
+    @PreAuthorize("hasAuthority('CREATE_ROLES')")
+    @PostMapping("/create/role")
+    public ResponseEntity<?> createRole(@RequestParam String roleName) {
+        Role role = new Role(roleName);
+        roleRepository.save(role);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAuthority('CREATE_PERMISSIONS')")
+    @PostMapping("/create/permission")
+    public ResponseEntity<?> createPermission(@RequestParam String permissionName) {
+        Permission perm = new Permission(permissionName);
+        permissionRepository.save(perm);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAuthority('ADD_USER_ROLE')")
+    @PostMapping("/user/role/add")
+    public ResponseEntity<?> userAddRoles(@RequestParam Long userId, @RequestParam Long role) {
+        
+        User user = userService.findUser(userId.toString());
+        user.getRoles().add(roleRepository.findById(role).orElse(null));
+
+        userService.save(user);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAuthority('REMOVE_USER_ROLE')")
+    @PostMapping("/user/role/remove")
+    public ResponseEntity<?> userRemoveRole(@RequestParam Long userId, @RequestParam Long role) {
+        
+        User user = userService.findUser(userId.toString());
+        user.getRoles().remove(roleRepository.findById(role).orElse(null));
+
+        userService.save(user);
+
+        return ResponseEntity.ok().build();
     }
 }

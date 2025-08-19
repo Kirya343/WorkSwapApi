@@ -1,14 +1,20 @@
 package org.workswap.api.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.common.dto.CategoryDTO;
 import org.workswap.core.services.CategoryService;
@@ -54,5 +60,36 @@ public class ApiCategoryController {
         Category category = new Category(dto.getName(), parent);
         category.setLeaf(dto.isLeaf());
         return categoryRepository.save(category);
+    }
+
+    @PreAuthorize("hasAuthority('CREATE_CATEGORY')")
+    @PostMapping("/add")
+    public ResponseEntity<?> addCategory(@RequestParam("translations") String translationsRaw,
+                              @RequestParam(value = "categoryName") String categoryName,
+                              @RequestParam(value = "leaf", defaultValue = "false") Boolean leaf,
+                              @RequestParam(value = "parentCategoryId", required = false) Long parentCategoryId) {
+        try {
+            List<String> translations = Arrays.asList(translationsRaw.split(","));
+            CategoryDTO categoryDto = new CategoryDTO();
+            categoryDto.setName(categoryName);
+            categoryDto.setLeaf(leaf);
+            categoryDto.setParentId(parentCategoryId);
+            System.out.println("Начинаем создавать категорию");
+            categoryService.createCategory(categoryDto, translations);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("errorMessage", "Ошибка при добавлении локации"));
+        }
+    }
+
+    @PreAuthorize("hasAuthority('DELETE_CATEGORY')")
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteCategory(@RequestParam Long category) {
+        try {
+            categoryService.deleteCategory(category);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("errorMessage", "Ошибка при удалении локации"));
+        }
     }
 }
