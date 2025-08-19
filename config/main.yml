@@ -8,7 +8,10 @@ server:
 
 spring:
   profiles:
-    active: "api"
+    active: 
+      - "api"
+      - "production"
+      - "backoffice"
   web:
     resources:
       static-locations: classpath:/static/,classpath:/images/
