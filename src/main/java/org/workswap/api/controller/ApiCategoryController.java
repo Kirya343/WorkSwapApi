@@ -92,4 +92,24 @@ public class ApiCategoryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("errorMessage", "Ошибка при удалении локации"));
         }
     }
+
+    @PreAuthorize("hasAuthority('VIEW_CATEGORIES')")
+    @GetMapping
+    public ResponseEntity<?> categoryList() {
+
+        Locale locale = Locale.of("ru");
+
+        List<CategoryDTO> rootCategories = categoryService.getRootCategories()
+                                                          .stream()
+                                                          .map(category -> categoryService.toDTO(category, locale))
+                                                          .collect(Collectors.toList());
+
+        List<CategoryDTO> categories = categoryRepository.findAll()
+                                                          .stream()
+                                                          .map(category -> categoryService.toDTO(category, locale))
+                                                          .collect(Collectors.toList());;
+
+        return ResponseEntity.ok().body(Map.of("rootCategories", rootCategories, 
+                                               "categories", categories));
+    }
 }
