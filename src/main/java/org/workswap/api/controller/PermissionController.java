@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/permissions")
-public class ApiPermissionController {
+public class PermissionController {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;

@@ -36,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/lang")
-public class ApiLocalizationController {
+public class LocalizationController {
 
     @Value("${api.key.localization}")
     private String localizationApiKey;

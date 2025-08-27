@@ -7,7 +7,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
-public class ApiUserController {
+public class UserController {
 
     private final UserService userService;
 
@@ -129,5 +131,18 @@ public class ApiUserController {
     @GetMapping("/current")
     public ResponseEntity<UserDTO> getCurrentUser(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userService.convertToDto(user));
+    }
+
+    //пометить пермишном
+    @GetMapping("/recent/{amount}")
+    public ResponseEntity<?> getRecentListings(
+        @PathVariable int amount
+    ) {
+        List<UserDTO> users = userService.getRecentUsers(amount)
+                                         .stream()
+                                         .map(userService::convertToDto)
+                                         .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("users", users));
     }
 }

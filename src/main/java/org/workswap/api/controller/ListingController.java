@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +41,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/listing")
-public class ApiListingController {
+public class ListingController {
     
     private final ChatRepository chatRepository;
     private final ListingService listingService;
@@ -191,5 +192,19 @@ public class ApiListingController {
         } catch (Exception e) {
             return ResponseEntity.ok().body("Ошибка при  объявления: " + e.getMessage());
         }
+    }
+
+    //пометить пермишном
+    @GetMapping("/recent/{amount}")
+    public ResponseEntity<?> getRecentListings(
+        @PathVariable int amount, 
+        @RequestParam String locale
+    ) {
+        List<ListingDTO> listings = listingService.getRecentListings(amount)
+                                                  .stream()
+                                                  .map(listing -> listingService.convertToDTO(listing, Locale.of(locale)))
+                                                  .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("listings", listings));
     }
 }

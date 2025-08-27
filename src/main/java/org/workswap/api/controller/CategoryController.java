@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/categories")
-public class ApiCategoryController {
+public class CategoryController {
     
     private final CategoryService categoryService;
 
