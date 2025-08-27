@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/stats")
 @RequiredArgsConstructor
-public class ApiStatsController {
+public class StatsController {
 
     private final StatsRepository statsRepository;
 

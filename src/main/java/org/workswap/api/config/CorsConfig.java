@@ -15,11 +15,17 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://workswap.org", 
-                                        "https://test.workswap.org",
-                                        "https://dash.workswap.org",
-                                        "http://localhost:8080") // твой сайт
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedOrigins(
+                            "https://workswap.org", 
+                            "https://test.workswap.org",
+                            "https://dash.workswap.org",
+                            "http://localhost:8080",
+                            "http://localhost:8082",
+                            "http://localhost:5173"
+                        )
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .exposedHeaders("Authorization")
                         .allowCredentials(true);
             }
         };

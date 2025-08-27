@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notifications")
-public class ApiNotificationController {
+public class NotificationController {
 
     private final NotificationRepository notificationRepository;
     private final NotificationService notificationService;

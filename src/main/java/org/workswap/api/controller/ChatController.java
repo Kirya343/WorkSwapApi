@@ -32,9 +32,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
-public class ApiChatController {
+public class ChatController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiChatController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     private final ChatService chatService;
     private final UserService userService;

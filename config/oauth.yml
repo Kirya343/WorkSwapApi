@@ -10,10 +10,7 @@ spring:
               - openid
               - profile
               - email
-            redirect-uri: http://localhost:8080/login/oauth2/code/google
-            #redirect-uri: http://localhost:8080/login/oauth2/code/google
-            #redirect-uri: https://workswap.org/login/oauth2/code/google
-            #redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: http://localhost:8083/login/oauth2/code/google
             authorization-grant-type: authorization_code
             client-name: Google
         provider:

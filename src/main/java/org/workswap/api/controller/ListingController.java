@@ -5,13 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.workswap.common.dto.ListingDTO;
 import org.workswap.core.services.ListingService;
 import org.workswap.core.services.UserService;
@@ -36,10 +38,10 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/listing")
-public class ApiListingController {
+public class ListingController {
     
     private final ChatRepository chatRepository;
     private final ListingService listingService;
@@ -168,5 +170,41 @@ public class ApiListingController {
         } catch (Exception e) {
             return ResponseEntity.ok().body("Ошибка при удалении объявления: " + e.getMessage());
         }
+    }
+
+    @PreAuthorize("hasAuthority('UPDATE_LISTING')")
+    @PostMapping("/update/{id}")
+    public ResponseEntity<?> modifyListing(@PathVariable Long id) {
+        try {
+            listingService.save(listingService.findListing(id.toString()));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.ok().body("Ошибка при обновлении объявления: " + e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasAuthority('DELETE_LISTING')")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteNews(@PathVariable Long id) {
+        try {
+            listingService.deleteListing(listingService.findListing(id.toString()));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.ok().body("Ошибка при  объявления: " + e.getMessage());
+        }
+    }
+
+    //пометить пермишном
+    @GetMapping("/recent/{amount}")
+    public ResponseEntity<?> getRecentListings(
+        @PathVariable int amount, 
+        @RequestParam String locale
+    ) {
+        List<ListingDTO> listings = listingService.getRecentListings(amount)
+                                                  .stream()
+                                                  .map(listing -> listingService.convertToDTO(listing, Locale.of(locale)))
+                                                  .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("listings", listings));
     }
 }
