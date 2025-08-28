@@ -48,6 +48,7 @@ public class AuthController {
                                  HttpServletResponse response) throws IOException {
 
         System.out.println("redirect: " + redirect);
+
         // создаём state, можно зашифровать или просто сохранить в сессии
         String state = Base64.getUrlEncoder().encodeToString(redirect.getBytes(StandardCharsets.UTF_8));
 

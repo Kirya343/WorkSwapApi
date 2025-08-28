@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -77,16 +78,14 @@ public class ListingController {
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Long listingId,
             @RequestParam("locale") String lang,
-            @RequestHeader(value = "X-User-Sub", required = false) String userSub,
+            @AuthenticationPrincipal User user,
             Model model,
             HttpServletRequest request
     ) {
         try {
-            User user = null;
             List<String> languages = new ArrayList<>();
             Location locationType = null;
-            if (userSub != null) {
-                user = userService.findUser(userSub);
+            if (user != null) {
                 languages = user.getLanguages();
             }
 

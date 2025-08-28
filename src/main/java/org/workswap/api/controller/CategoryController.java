@@ -112,4 +112,15 @@ public class CategoryController {
         return ResponseEntity.ok().body(Map.of("rootCategories", rootCategories, 
                                                "categories", categories));
     }
+
+    @GetMapping("/root")
+    public ResponseEntity<?> rootCategoryList(@RequestParam String locale) {
+
+        List<CategoryDTO> rootCategories = categoryService.getRootCategories()
+                                                          .stream()
+                                                          .map(category -> categoryService.toDTO(category, Locale.of("locale")))
+                                                          .collect(Collectors.toList());
+
+        return ResponseEntity.ok().body(Map.of("rootCategories", rootCategories));
+    }
 }
