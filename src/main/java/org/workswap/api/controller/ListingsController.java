@@ -34,7 +34,6 @@ import org.workswap.datasource.central.model.listingModels.Location;
 import org.workswap.datasource.central.repository.CategoryRepository;
 import org.workswap.datasource.central.repository.LocationRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
-
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +41,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/listing")
-public class ListingController {
+public class ListingsController {
     
     private final ChatRepository chatRepository;
     private final ListingService listingService;
@@ -68,6 +67,7 @@ public class ListingController {
         return ResponseEntity.ok().body(listing);
     }
 
+    @PermitAll
     @GetMapping("/catalog")
     public ResponseEntity<?> sortCatalogAjax(
             @RequestParam(required = false) String category,
@@ -200,6 +200,32 @@ public class ListingController {
         @RequestParam String locale
     ) {
         List<ListingDTO> listings = listingService.getRecentListings(amount)
+                                                  .stream()
+                                                  .map(listing -> listingService.convertToDTO(listing, Locale.of(locale)))
+                                                  .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("listings", listings));
+    }
+
+    @GetMapping("/my-listings")
+    public ResponseEntity<?> getMyListings(
+        @AuthenticationPrincipal User user,
+        @RequestParam String locale
+    ) {
+        List<ListingDTO> listings = listingService.findListingsByUser(user)
+                                                  .stream()
+                                                  .map(listing -> listingService.convertToDTO(listing, Locale.of(locale)))
+                                                  .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("listings", listings));
+    }
+
+    @GetMapping("/favorites")
+    public ResponseEntity<?> getFavorites(
+        @AuthenticationPrincipal User user,
+        @RequestParam String locale
+    ) {
+        List<ListingDTO> listings = listingService.findFavoritesListingsByUser(user)
                                                   .stream()
                                                   .map(listing -> listingService.convertToDTO(listing, Locale.of(locale)))
                                                   .collect(Collectors.toList());

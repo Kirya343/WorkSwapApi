@@ -1,6 +1,7 @@
 package org.workswap.api.controller;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
@@ -45,21 +46,25 @@ public class AuthController {
 
     @GetMapping("/authorize")
     public void redirectToGoogle(@RequestParam(required = false, defaultValue = "/") String redirect,
+                                 HttpServletRequest request,
                                  HttpServletResponse response) throws IOException {
 
         System.out.println("redirect: " + redirect);
 
         // создаём state, можно зашифровать или просто сохранить в сессии
-        String state = Base64.getUrlEncoder().encodeToString(redirect.getBytes(StandardCharsets.UTF_8));
+        String state = Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(redirect.getBytes(StandardCharsets.UTF_8));
+        String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+
+        request.getSession().setAttribute("redirectUrl", encodedState);
 
         String authorizationUri = UriComponentsBuilder
-                .fromUriString("https://accounts.google.com/o/oauth2/auth")
+                .fromUriString("/oauth2/authorization/google")
                 .queryParam("response_type", "code")
                 .queryParam("client_id", ((ClientRegistration) ((InMemoryClientRegistrationRepository) clientRegistrationRepository)
                         .findByRegistrationId("google")).getClientId())
                 .queryParam("scope", "openid profile email")
                 .queryParam("redirect_uri", apiUrl + "/login/oauth2/code/google")
-                .queryParam("state", state)
                 .build()
                 .toUriString();
 

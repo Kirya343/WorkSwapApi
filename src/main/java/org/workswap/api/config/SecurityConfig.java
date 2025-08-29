@@ -53,7 +53,7 @@ public class SecurityConfig {
         return http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/auth/refresh",
+                    "/api/**",
                     "/oauth2/**", 
                     "/login/**"
                 ).permitAll()
