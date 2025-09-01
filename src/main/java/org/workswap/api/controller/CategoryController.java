@@ -107,7 +107,7 @@ public class CategoryController {
         List<CategoryDTO> categories = categoryRepository.findAll()
                                                           .stream()
                                                           .map(category -> categoryService.toDTO(category, locale))
-                                                          .collect(Collectors.toList());;
+                                                          .collect(Collectors.toList());
 
         return ResponseEntity.ok().body(Map.of("rootCategories", rootCategories, 
                                                "categories", categories));

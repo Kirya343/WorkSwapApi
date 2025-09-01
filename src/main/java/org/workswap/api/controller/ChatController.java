@@ -7,10 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.datasource.central.model.User;
@@ -19,7 +19,6 @@ import org.workswap.common.dto.MessageDTO;
 import org.workswap.datasource.central.model.chat.*;
 import org.workswap.datasource.central.repository.chat.ChatParticipantRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
-import org.workswap.core.services.UserService;
 import org.workswap.core.services.ChatService;
 
 import lombok.RequiredArgsConstructor;
@@ -37,15 +36,13 @@ public class ChatController {
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     private final ChatService chatService;
-    private final UserService userService;
     private final ChatRepository chatRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final MessageSource messageSource;
 
 
     @GetMapping("/{chatId}/messages")
-    public ResponseEntity<List<MessageDTO>> getChatMessages(@PathVariable Long chatId, @RequestHeader("X-User-Sub") String userSub) {
-        User currentUser = userService.findUser(userSub);
+    public ResponseEntity<List<MessageDTO>> getChatMessages(@PathVariable Long chatId, @AuthenticationPrincipal User user) {
 
         Chat chat = chatService.getChatById(chatId);
 
@@ -54,7 +51,7 @@ public class ChatController {
         }
 
         // Маркируем сообщения как прочитанные
-        chatService.markMessagesAsRead(chatId, currentUser);
+        chatService.markMessagesAsRead(chatId, user);
 
         // Получаем сообщения
         List<Message> messages = chatService.getMessages(chat);
@@ -72,7 +69,7 @@ public class ChatController {
                         msg.getSender().getId(),
                         msg.getReceiver().getId(),
                         msg.getChat().getId(),
-                        msg.isOwn(currentUser)
+                        msg.isOwn(user)
                 ))
                 .collect(Collectors.toList());
 
@@ -80,8 +77,8 @@ public class ChatController {
     }
 
     @GetMapping("/{id}/chat-terms")
-    public ResponseEntity<?> getTermsState(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub, Locale locale) {
-        User user = userService.findUser(userSub);
+    public ResponseEntity<?> getTermsState(@PathVariable Long id, @AuthenticationPrincipal User user, Locale locale) {
+
         Chat chat = chatRepository.findById(id).orElse(null);
 
         ChatParticipant participant = chatParticipantRepository.findByUserAndChat(user, chat);
@@ -97,8 +94,8 @@ public class ChatController {
 
     @PreAuthorize("hasAuthority('CHAT_GET_INTERLOCUTOR')")
     @GetMapping("/{id}/getInterlocutorInfo")
-    public InterlocutorInfoDTO getInterlocutorInfo(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
-        User user = userService.findUser(userSub);
+    public InterlocutorInfoDTO getInterlocutorInfo(@PathVariable Long id, @AuthenticationPrincipal User user) {
+
         Chat chat = chatRepository.findById(id).orElse(null);
         ChatParticipant participant = chatParticipantRepository.findByUserAndChat(user, chat);
         
@@ -112,8 +109,7 @@ public class ChatController {
     }
 
     @PostMapping("/{id}/accept-terms")
-    public ResponseEntity<?> acceptTerms(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
-        User user = userService.findUser(userSub);
+    public ResponseEntity<?> acceptTerms(@PathVariable Long id, @AuthenticationPrincipal User user) {
         Chat chat = chatRepository.findById(id).orElse(null);
         ChatParticipant participant = chatParticipantRepository.findByUserAndChat(user, chat);
         
@@ -126,9 +122,8 @@ public class ChatController {
     }
 
     @PostMapping("/temporary")
-    public ResponseEntity<Void> deleteTemporaryChat(@RequestHeader("X-User-Sub") String userSub) {
+    public ResponseEntity<Void> deleteTemporaryChat(@AuthenticationPrincipal User user) {
 
-        User user = userService.findUser(userSub);
         logger.debug("Запрос на удаление временных диалогов от пользователя: {}", user.getName());
 
         List<Chat> chats = chatRepository.findAllByParticipant(user);

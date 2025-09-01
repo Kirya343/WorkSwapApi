@@ -129,8 +129,13 @@ public class UsersController {
     }
 
     @GetMapping("/current")
-    public ResponseEntity<UserDTO> getCurrentUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(userService.convertToDto(user));
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(Map.of("user", userService.convertToDto(user)));
+    }
+
+    @GetMapping("/get/{id}")
+    public ResponseEntity<?> getUser(@PathVariable Long id) {
+        return ResponseEntity.ok(Map.of("user", userService.convertToDto(userService.findUser(id.toString()))));
     }
 
     //пометить пермишном

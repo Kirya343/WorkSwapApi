@@ -29,11 +29,28 @@ public class LocationController {
     private final LocationService locationService;
     private final LocationRepository locationRepository;
 
+    @GetMapping
+    public List<LocationDTO> getAllLocations(Locale locale) {
+        return locationRepository.findAll()
+                                 .stream()
+                                 .map(loc -> locationService.toDTO(loc))
+                                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/countries")
+    public List<LocationDTO> getCountires(Locale locale) {
+        return locationService.getCountries()
+                              .stream()
+                              .map(loc -> locationService.toDTO(loc))
+                              .collect(Collectors.toList());
+    }
+
     @GetMapping("/cities/{coutryId}")
     public List<LocationDTO> getChildCategories(@PathVariable Long coutryId, Locale locale) {
-        return locationService.getCities(coutryId).stream()
-                .map(category -> locationService.toDTO(category))
-                .collect(Collectors.toList());
+        return locationService.getCities(coutryId)
+                              .stream()
+                              .map(loc -> locationService.toDTO(loc))
+                              .collect(Collectors.toList());
     }
 
     @GetMapping("/getlocation/{locationId}")

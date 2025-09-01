@@ -50,8 +50,21 @@ public class ListingsController {
     private final CategoryRepository categoryRepository;
 
     @PermitAll
-    @GetMapping("/{chatId}/get")
-    public ResponseEntity<?> getListing(@PathVariable Long chatId, @RequestParam("locale") String lang, Model model) {
+    @GetMapping("/get/{listingId}")
+    public ResponseEntity<?> getListing(@PathVariable Long listingId, @RequestParam("locale") String lang, Model model) {
+
+        ListingDTO listing = listingService.convertToDTO(listingService.findListing(listingId.toString()), Locale.of(lang));
+
+        if (listing == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok().body(listing);
+    }
+
+    @PermitAll
+    @GetMapping("/chat/get/{chatId}")
+    public ResponseEntity<?> getListingFromChat(@PathVariable Long chatId, @RequestParam("locale") String lang, Model model) {
 
         Chat conv = chatRepository.findById(chatId).orElse(null);
 

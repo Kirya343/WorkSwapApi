@@ -57,6 +57,8 @@ public class SecurityConfig {
                     "/oauth2/**", 
                     "/login/**"
                 ).permitAll()
+                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers( "/app/**").authenticated()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
