@@ -3,10 +3,12 @@ logging:
     org.workswap.main.controller.advice.GlobalExceptionHandler: INFO
     org.workswap.config.SecurityConfig: INFO
 
-    org.workswap.main.controller.components.ApiChatController: INFO  
+    org.workswap.main.controller.components.ChatController: INFO  
     org.workswap.main.controller.components.ChatWebSocketController: INFO
 
     org.workswap.main.controller.secure.OwnListingController: INFO
+
+    org.workswap.api.controller.UploadController: DEBUG
     
     org.workswap.core.services.UserService: INFO
     org.workswap.core.services.ListingService: INFO

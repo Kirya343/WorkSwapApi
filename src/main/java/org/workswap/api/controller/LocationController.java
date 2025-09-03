@@ -30,32 +30,44 @@ public class LocationController {
     private final LocationRepository locationRepository;
 
     @GetMapping
-    public List<LocationDTO> getAllLocations(Locale locale) {
-        return locationRepository.findAll()
-                                 .stream()
-                                 .map(loc -> locationService.toDTO(loc))
-                                 .collect(Collectors.toList());
+    public ResponseEntity<?> getAllLocations(Locale locale) {
+        
+        List<LocationDTO> locs = locationRepository.findAll()
+                                                   .stream()
+                                                   .map(loc -> locationService.toDTO(loc))
+                                                   .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("locations", locs));
     }
 
     @GetMapping("/countries")
-    public List<LocationDTO> getCountires(Locale locale) {
-        return locationService.getCountries()
+    public ResponseEntity<?> getCountires(Locale locale) {
+
+        List<LocationDTO> locs = locationService.getCountries()
                               .stream()
                               .map(loc -> locationService.toDTO(loc))
                               .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("locations", locs));
     }
 
     @GetMapping("/cities/{coutryId}")
-    public List<LocationDTO> getChildCategories(@PathVariable Long coutryId, Locale locale) {
-        return locationService.getCities(coutryId)
+    public ResponseEntity<?> getChildCategories(@PathVariable Long coutryId, Locale locale) {
+
+        List<LocationDTO> locs = locationService.getCities(coutryId)
                               .stream()
                               .map(loc -> locationService.toDTO(loc))
                               .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("locations", locs));
     }
 
     @GetMapping("/getlocation/{locationId}")
-    public LocationDTO getCategoryPath(@PathVariable Long locationId, Locale locale) {
-        return locationService.toDTO(locationRepository.findById(locationId).orElse(null));
+    public ResponseEntity<?> getCategoryPath(@PathVariable Long locationId, Locale locale) {
+
+        LocationDTO loc = locationService.toDTO(locationRepository.findById(locationId).orElse(null));
+
+        return ResponseEntity.ok(Map.of("location", loc));
     }
 
     @PreAuthorize("hasAuthority('CREATE_LOCATION')")

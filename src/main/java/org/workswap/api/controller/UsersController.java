@@ -31,7 +31,6 @@ import org.workswap.datasource.central.model.User;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.servlet.ServletException;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -95,7 +94,7 @@ public class UsersController {
 
     @PreAuthorize("hasAuthority('DELETE_OWN_ACCOUNT')")
     @DeleteMapping("/delete-account")
-    public ResponseEntity<?> deleteAccount(@RequestHeader("X-User-Sub") String userSub) throws ServletException {
+    public ResponseEntity<?> deleteAccount(@RequestHeader("X-User-Sub") String userSub) {
         userService.deleteUser(userService.findUser(userSub));
 
         return ResponseEntity.ok().build();

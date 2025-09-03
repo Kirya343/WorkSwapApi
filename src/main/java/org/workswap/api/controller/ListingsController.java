@@ -17,22 +17,23 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.common.dto.ListingDTO;
+import org.workswap.core.services.CategoryService;
 import org.workswap.core.services.ListingService;
+import org.workswap.core.services.LocationService;
 import org.workswap.core.services.UserService;
 import org.workswap.datasource.central.model.Listing;
 import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.chat.Chat;
 import org.workswap.datasource.central.model.listingModels.Category;
 import org.workswap.datasource.central.model.listingModels.Location;
-import org.workswap.datasource.central.repository.CategoryRepository;
-import org.workswap.datasource.central.repository.LocationRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,9 +46,9 @@ public class ListingsController {
     
     private final ChatRepository chatRepository;
     private final ListingService listingService;
-    private final LocationRepository locationRepository;
+    private final LocationService locationService;
+    private final CategoryService categoryService;
     private final UserService userService;
-    private final CategoryRepository categoryRepository;
 
     @PermitAll
     @GetMapping("/get/{listingId}")
@@ -59,7 +60,7 @@ public class ListingsController {
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok().body(listing);
+        return ResponseEntity.ok().body(Map.of("listing", listing));
     }
 
     @PermitAll
@@ -89,7 +90,6 @@ public class ListingsController {
             @RequestParam(required = false) String searchQuery,
             @RequestParam(required = false, defaultValue = "false") boolean hasReviews,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) Long listingId,
             @RequestParam("locale") String lang,
             @AuthenticationPrincipal User user,
             Model model,
@@ -105,7 +105,7 @@ public class ListingsController {
             if (location == null && user != null) {
                 locationType = user.getLocation();
             } else {
-                locationType = locationRepository.findByName(location);
+                locationType = locationService.findLocation(location);
             }
 
             if (!languages.contains(lang)) {
@@ -114,7 +114,7 @@ public class ListingsController {
 
             Pageable pageable = PageRequest.of(page, 12);
 
-            Category categoryType = categoryRepository.findByName(category);
+            Category categoryType = categoryService.findCategory(category);
 
             Page<Listing> listingsPage = listingService.findPageOfSortedListings(categoryType, sortBy, pageable, locationType, searchQuery, hasReviews, languages);
 
@@ -126,11 +126,10 @@ public class ListingsController {
             Map<String, Object> response = new HashMap<>();
 
             response.put("listings", listings);
-            response.put("mainListingId", listingId);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.err.println("Ошибка в API каталога: " + e.getMessage());
+
             e.printStackTrace();
             
             Map<String, String> errorResponse = new HashMap<>();
@@ -141,34 +140,38 @@ public class ListingsController {
         }
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<?> createListing(@AuthenticationPrincipal User authUser) {
+        Listing listing = new Listing(authUser);
+        Listing savedListing = listingService.saveAndReturn(listing);
+        return ResponseEntity.ok(Map.of("message", "Черновик объявления сохранён", "id", savedListing.getId()));
+    }
+
     @PostMapping("/{id}/favorite")
-    public ResponseEntity<?> toggleFavorite(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
-        User user = userService.findUser(userSub);
+    public ResponseEntity<?> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingService.findListing(id.toString());
+        User user = userService.findUser(authUser.getEmail());
 
         listingService.toggleFavorite(user, listing);
-        return  ResponseEntity.ok().build();
+        return  ResponseEntity.ok(Map.of("message", "Избранное обновлено"));
     }
 
     @GetMapping("/{id}/favorite/status")
-    public ResponseEntity<?> isFavorite(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
-        User user = userService.findUser(userSub);
+    public ResponseEntity<?> isFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingService.findListing(id.toString());
+        User user = userService.findUser(authUser.getEmail());
 
         boolean isFavorite = listingService.isFavorite(user, listing);
-        return  ResponseEntity.ok(isFavorite);
+        return  ResponseEntity.ok(Map.of("isFavorite", isFavorite));
     }
 
     @DeleteMapping("/{id}/delete")
     public ResponseEntity<?> deleteListing(
             @PathVariable Long id,
-            @RequestHeader("X-User-Sub") String userSub
+            @AuthenticationPrincipal User user
     ) {
         try {
             Listing listing = listingService.findListing(id.toString());
-
-            // Проверка авторства
-            User user = userService.findUser(userSub);
 
             if (!listing.getAuthor().equals(user)) {
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Вы не можете удалить это объявление");
@@ -233,6 +236,21 @@ public class ListingsController {
         return ResponseEntity.ok(Map.of("listings", listings));
     }
 
+    @GetMapping("/by-user/{id}")
+    public ResponseEntity<?> getListingsByUser(
+        @PathVariable Long id,
+        @RequestParam String locale
+    ) {
+        User user = userService.findUser(id.toString());
+        
+        List<ListingDTO> listings = listingService.findListingsByUser(user)
+                                                  .stream()
+                                                  .map(listing -> listingService.convertToDTO(listing, Locale.of(locale)))
+                                                  .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("listings", listings));
+    }
+
     @GetMapping("/favorites")
     public ResponseEntity<?> getFavorites(
         @AuthenticationPrincipal User user,
@@ -244,5 +262,57 @@ public class ListingsController {
                                                   .collect(Collectors.toList());
 
         return ResponseEntity.ok(Map.of("listings", listings));
+    }
+
+    @PatchMapping("/modify/{id}")
+    public ResponseEntity<?> modifyListing(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> updates) {
+
+        Listing listing = listingService.findListing(id.toString());
+
+        if(listing != null) {
+            updates.forEach((key, value) -> {
+                switch (key) {
+                    case "price":
+                        if (value != null) {
+                            Double price;
+                            if (value instanceof Number) {
+                                price = ((Number) value).doubleValue();
+                            } else {
+                                price = Double.parseDouble(value.toString());
+                            }
+                            listing.setPrice(price);
+                        }
+                        break;
+                    case "mainImageUrl":
+                        listing.setImagePath((String) value);
+                        break;
+                    case "active":
+                        listing.setActive((Boolean) value);
+                        break;
+                    case "testMode":
+                        listing.setTestMode((Boolean) value);
+                        break;
+                    case "location":
+                        if (value != null) {
+                            Long locId = ((Number) value).longValue(); // безопасно для Integer и Long
+                            Location loc = locationService.findLocation(locId.toString());
+                            listing.setLocation(loc);
+                        }
+                        break;
+                    case "category":
+                        if (value != null) {
+                            Long catId = ((Number) value).longValue(); // безопасно для Integer и Long
+                            Category cat = categoryService.findCategory(catId.toString());
+                            listing.setCategory(cat);
+                        }
+                        break;
+                }
+            });
+        }
+
+        listingService.save(listing);
+        return ResponseEntity.ok(Map.of("message", "Объявление успешно обновлено"));
     }
 }

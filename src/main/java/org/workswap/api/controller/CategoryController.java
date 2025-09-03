@@ -53,7 +53,7 @@ public class CategoryController {
     }
 
     //пометить пермишном
-    @PostMapping
+    @PostMapping("/create")
     public Category createCategory(@RequestBody CategoryDTO dto) {
         Category parent = categoryService.findCategory(dto.getParentId().toString());
         
@@ -99,18 +99,12 @@ public class CategoryController {
 
         Locale locale = Locale.of("ru");
 
-        List<CategoryDTO> rootCategories = categoryService.getRootCategories()
-                                                          .stream()
-                                                          .map(category -> categoryService.toDTO(category, locale))
-                                                          .collect(Collectors.toList());
-
         List<CategoryDTO> categories = categoryRepository.findAll()
                                                           .stream()
                                                           .map(category -> categoryService.toDTO(category, locale))
                                                           .collect(Collectors.toList());
 
-        return ResponseEntity.ok().body(Map.of("rootCategories", rootCategories, 
-                                               "categories", categories));
+        return ResponseEntity.ok().body(Map.of("categories", categories));
     }
 
     @GetMapping("/root")

@@ -1,0 +1,116 @@
+package org.workswap.api.controller;
+
+import java.io.IOException;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import org.workswap.core.services.ListingService;
+import org.workswap.core.services.components.MultipartInputStreamFileResource;
+import org.workswap.datasource.central.model.User;
+import org.workswap.datasource.central.model.listingModels.Image;
+import org.workswap.datasource.central.repository.ImageRepository;
+
+import lombok.RequiredArgsConstructor;;
+
+@RestController
+@RequestMapping("/api/upload")
+@RequiredArgsConstructor
+public class UploadController {
+
+    private final ImageRepository imageRepository;
+    private final ListingService listingService;
+
+    private static final Logger logger = LoggerFactory.getLogger(UploadController.class);
+
+    @Value("${cloud.url}")
+    private String cloudUrl;
+
+    @PostMapping("/listing-image")
+    public ResponseEntity<?> uploadListingImage(
+            @RequestParam("image") MultipartFile file,
+            @RequestParam(required = false) Long listingId,
+            @AuthenticationPrincipal User user
+    ) {
+        try {
+            // 1. Отправляем в клауд
+            String imageUrl = uploadToCloud(file, listingId, user.getSub());
+
+            logger.debug(imageUrl);
+
+            // 2. Сохраняем в БД
+            Image savedImage = saveImageInDb(imageUrl, listingId);
+
+            logger.debug(savedImage.getId().toString());
+            logger.debug(savedImage.getPath());
+
+            return ResponseEntity.ok(Map.of("message", "Изображение успешно сохранено", 
+                                            "imageId", savedImage.getId(), 
+                                            "imageUrl", savedImage.getPath())); // редирект на страницу объявления
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Ошибка при загрузке изображения"));
+        }
+    }
+
+    // Загружаем изображение в облачный сервис и возвращаем URL
+    private String uploadToCloud(MultipartFile file, Long listingId, String userSub) throws IOException {
+        String url = cloudUrl + "/cloud/save/listing-image";
+
+        // multipart тело
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("image", new MultipartInputStreamFileResource(file.getInputStream(), file.getOriginalFilename()));
+        if (listingId != null) {
+            body.add("listingId", listingId.toString());
+        }
+
+        // заголовки
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.set("X-User-Sub", userSub);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        // правильный вызов с дженериком
+        ResponseEntity<Map<String, Object>> response =
+                restTemplate.exchange(url, HttpMethod.POST, requestEntity,
+                        new ParameterizedTypeReference<Map<String, Object>>() {});
+
+        Map<String, Object> responseBody = response.getBody();
+
+        if (response.getStatusCode().is2xxSuccessful() && responseBody != null) {
+            return (String) responseBody.get("url");
+        } else {
+            throw new RuntimeException("Failed to upload image to cloud: " + response.getStatusCode());
+        }
+    }
+
+    // Сохраняем Image в базе и возвращаем объект
+    private Image saveImageInDb(String imageUrl, Long listingId) {
+        Image image = new Image(
+            imageUrl, 
+            listingId != null ? listingService.findListing(listingId.toString()) : null
+        );
+        Image savedImage = imageRepository.save(image);
+
+        return savedImage;
+    }
+}

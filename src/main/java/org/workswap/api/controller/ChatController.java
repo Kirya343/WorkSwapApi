@@ -12,21 +12,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.workswap.datasource.central.model.Listing;
 import org.workswap.datasource.central.model.User;
 import org.workswap.common.dto.InterlocutorInfoDTO;
-import org.workswap.common.dto.MessageDTO;
 import org.workswap.datasource.central.model.chat.*;
 import org.workswap.datasource.central.repository.chat.ChatParticipantRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 import org.workswap.core.services.ChatService;
+import org.workswap.core.services.ListingService;
+import org.workswap.core.services.UserService;
 
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -39,41 +42,31 @@ public class ChatController {
     private final ChatRepository chatRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final MessageSource messageSource;
+    private final UserService userService;
+    private final ListingService listingService;
 
+    @GetMapping("/get")
+    public ResponseEntity<?> startNewChat(@RequestParam("sellerId") Long sellerId,
+                               @RequestParam(value = "listingId", required = false) Long listingId,
+                               @AuthenticationPrincipal User user) {
 
-    @GetMapping("/{chatId}/messages")
-    public ResponseEntity<List<MessageDTO>> getChatMessages(@PathVariable Long chatId, @AuthenticationPrincipal User user) {
+        User currentUser = userService.findUser(user.getEmail());
+        User seller = userService.findUser(sellerId.toString());
 
-        Chat chat = chatService.getChatById(chatId);
-
-        if (chat == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();  // 404, если беседа не найдена
+        if (seller == null || currentUser == null || currentUser.equals(seller)) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Чат не найден"));
         }
 
-        // Маркируем сообщения как прочитанные
-        chatService.markMessagesAsRead(chatId, user);
+        Set<User> participants = Set.of(currentUser, seller);
 
-        // Получаем сообщения
-        List<Message> messages = chatService.getMessages(chat);
-
-        if (messages.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();  // 204, если сообщений нет
+        Listing listing = null;
+        if (listingId != null) {
+            listing = listingService.findListing(listingId.toString());
         }
 
-        // Преобразуем в DTO и возвращаем
-        List<MessageDTO> messageDTOs = messages.parallelStream()
-                .map(msg -> new MessageDTO(
-                        msg.getId(),
-                        msg.getText(),
-                        msg.getSentAt(),
-                        msg.getSender().getId(),
-                        msg.getReceiver().getId(),
-                        msg.getChat().getId(),
-                        msg.isOwn(user)
-                ))
-                .collect(Collectors.toList());
+        Chat chat = chatService.getOrCreateChat(participants, listing);
 
-        return ResponseEntity.ok(messageDTOs);
+        return ResponseEntity.ok(Map.of("chatId", chat.getId()));
     }
 
     @GetMapping("/{id}/chat-terms")

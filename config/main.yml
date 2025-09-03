@@ -48,3 +48,6 @@ api:
 
 backoffice:
   url: http://localhost:5173
+
+cloud:
+  url: http://localhost:8084
