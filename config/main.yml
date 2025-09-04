@@ -50,4 +50,5 @@ backoffice:
   url: http://localhost:5173
 
 cloud:
-  url: http://localhost:8084
+  #url: http://localhost:8084
+  url: https://cloud.workswap.org

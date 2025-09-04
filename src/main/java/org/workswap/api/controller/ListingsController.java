@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.workswap.common.dto.ImageDTO;
 import org.workswap.common.dto.ListingDTO;
 import org.workswap.core.services.CategoryService;
 import org.workswap.core.services.ListingService;
@@ -33,7 +34,9 @@ import org.workswap.datasource.central.model.Listing;
 import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.chat.Chat;
 import org.workswap.datasource.central.model.listingModels.Category;
+import org.workswap.datasource.central.model.listingModels.ListingTranslation;
 import org.workswap.datasource.central.model.listingModels.Location;
+import org.workswap.datasource.central.repository.ListingTranslationRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +52,9 @@ public class ListingsController {
     private final LocationService locationService;
     private final CategoryService categoryService;
     private final UserService userService;
+
+    // Я понимаю что использовать в репозитории в контроллерах нехорошо, но создавать целый сервис ради одного метода сохранения - ещё хуже
+    private final ListingTranslationRepository listingTranslationRepository;
 
     @PermitAll
     @GetMapping("/get/{listingId}")
@@ -140,6 +146,17 @@ public class ListingsController {
         }
     }
 
+    @GetMapping("/drafts")
+    public ResponseEntity<?> getDraftListings(@AuthenticationPrincipal User authUser, @RequestParam String locale) {
+
+        List<ListingDTO> drafts = listingService.findDrafts(authUser)
+                                                .stream()
+                                                .map(listing -> listingService.convertToDTO(listing, Locale.of(locale)))
+                                                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("listings", drafts));
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> createListing(@AuthenticationPrincipal User authUser) {
         Listing listing = new Listing(authUser);
@@ -228,7 +245,7 @@ public class ListingsController {
         @AuthenticationPrincipal User user,
         @RequestParam String locale
     ) {
-        List<ListingDTO> listings = listingService.findListingsByUser(user)
+        List<ListingDTO> listings = listingService.findMyListings(user)
                                                   .stream()
                                                   .map(listing -> listingService.convertToDTO(listing, Locale.of(locale)))
                                                   .collect(Collectors.toList());
@@ -264,6 +281,22 @@ public class ListingsController {
         return ResponseEntity.ok(Map.of("listings", listings));
     }
 
+    @GetMapping("/images/{id}")
+    public ResponseEntity<?> getImages(
+        @AuthenticationPrincipal User user,
+        @PathVariable Long id,
+        @RequestParam String locale
+    ) {
+        Listing listing = listingService.findListing(id.toString());
+
+        List<ImageDTO> images = listing.getImages()
+                                        .stream()
+                                        .map(image -> new ImageDTO(image.getId(), id, image.getPath()))
+                                        .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("images", images));
+    }
+
     @PatchMapping("/modify/{id}")
     public ResponseEntity<?> modifyListing(
             @PathVariable Long id,
@@ -274,6 +307,23 @@ public class ListingsController {
         if(listing != null) {
             updates.forEach((key, value) -> {
                 switch (key) {
+                    case "translation":
+                        if (value instanceof Map) {
+                            Map<?, ?> rawMap = (Map<?, ?>) value;
+
+                            rawMap.forEach((lang, v) -> {
+                                String language = (String) lang;
+                                if (v instanceof Map) {
+                                    Map<?, ?> vMap = (Map<?, ?>) v;
+                                    String title = (String) vMap.get("title");
+                                    String description = (String) vMap.get("description");
+
+                                    ListingTranslation translation = new ListingTranslation(language, title, description, listing);
+                                    listingTranslationRepository.save(translation);
+                                }
+                            });
+                        }
+                        break;
                     case "price":
                         if (value != null) {
                             Double price;

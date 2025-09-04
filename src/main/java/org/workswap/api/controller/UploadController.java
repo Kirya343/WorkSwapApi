@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +32,7 @@ import org.workswap.datasource.central.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;;
 
 @RestController
-@RequestMapping("/api/upload")
+@RequestMapping("/api/cloud")
 @RequiredArgsConstructor
 public class UploadController {
 
@@ -43,7 +44,8 @@ public class UploadController {
     @Value("${cloud.url}")
     private String cloudUrl;
 
-    @PostMapping("/listing-image")
+    //пометить пермишном
+    @PostMapping("/upload/listing-image")
     public ResponseEntity<?> uploadListingImage(
             @RequestParam("image") MultipartFile file,
             @RequestParam(required = false) Long listingId,
@@ -89,7 +91,6 @@ public class UploadController {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        // правильный вызов с дженериком
         ResponseEntity<Map<String, Object>> response =
                 restTemplate.exchange(url, HttpMethod.POST, requestEntity,
                         new ParameterizedTypeReference<Map<String, Object>>() {});
@@ -112,5 +113,42 @@ public class UploadController {
         Image savedImage = imageRepository.save(image);
 
         return savedImage;
+    }
+
+    //пометить пермишном
+    @DeleteMapping("/delete/listing-image")
+    public ResponseEntity<?> deleteListingImage(@RequestParam Long imageId, @RequestParam String imageUrl, @AuthenticationPrincipal User user) {
+        
+        String message = deleteImageFromCloud(imageUrl, user.getSub());
+
+        if (message != null) {
+            imageRepository.deleteById(imageId);
+        }
+
+        return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    private String deleteImageFromCloud(String imageUrl, String userSub) {
+        String url = cloudUrl + "/cloud/delete/listing-image?imageUrl=" + imageUrl;
+
+        // заголовки
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-User-Sub", userSub);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        ResponseEntity<Map<String, Object>> response =
+                restTemplate.exchange(url, HttpMethod.DELETE, requestEntity,
+                        new ParameterizedTypeReference<Map<String, Object>>() {});
+
+        Map<String, Object> responseBody = response.getBody();
+
+        if (response.getStatusCode().is2xxSuccessful() && responseBody != null) {
+            return (String) responseBody.get("message");
+        } else {
+            throw new RuntimeException("Failed to upload image to cloud: " + response.getStatusCode());
+        }
     }
 }
