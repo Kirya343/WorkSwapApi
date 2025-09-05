@@ -21,8 +21,8 @@ import org.workswap.datasource.central.model.chat.*;
 import org.workswap.datasource.central.repository.chat.ChatParticipantRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 import org.workswap.core.services.ChatService;
-import org.workswap.core.services.ListingService;
 import org.workswap.core.services.UserService;
+import org.workswap.core.services.query.ListingQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,7 +43,7 @@ public class ChatController {
     private final ChatParticipantRepository chatParticipantRepository;
     private final MessageSource messageSource;
     private final UserService userService;
-    private final ListingService listingService;
+    private final ListingQueryService listingQueryService;
 
     @GetMapping("/get")
     public ResponseEntity<?> startNewChat(@RequestParam("sellerId") Long sellerId,
@@ -61,7 +61,7 @@ public class ChatController {
 
         Listing listing = null;
         if (listingId != null) {
-            listing = listingService.findListing(listingId.toString());
+            listing = listingQueryService.findListing(listingId.toString());
         }
 
         Chat chat = chatService.getOrCreateChat(participants, listing);

@@ -11,15 +11,11 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.workswap.core.services.UserService;
 import org.workswap.core.services.components.security.JwtIssuer;
 import org.workswap.core.services.components.security.JwtService;
@@ -42,8 +38,6 @@ public class AuthController {
     @Value("${api.url}")
     private String apiUrl;
 
-    private final ClientRegistrationRepository clientRegistrationRepository;
-
     @GetMapping("/authorize")
     public void redirectToGoogle(@RequestParam(required = false, defaultValue = "/") String redirect,
                                  HttpServletRequest request,
@@ -54,21 +48,12 @@ public class AuthController {
         // создаём state, можно зашифровать или просто сохранить в сессии
         String state = Base64.getUrlEncoder().withoutPadding()
             .encodeToString(redirect.getBytes(StandardCharsets.UTF_8));
+
         String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
 
         request.getSession().setAttribute("redirectUrl", encodedState);
 
-        String authorizationUri = UriComponentsBuilder
-                .fromUriString("/oauth2/authorization/google")
-                .queryParam("response_type", "code")
-                .queryParam("client_id", ((ClientRegistration) ((InMemoryClientRegistrationRepository) clientRegistrationRepository)
-                        .findByRegistrationId("google")).getClientId())
-                .queryParam("scope", "openid profile email")
-                .queryParam("redirect_uri", apiUrl + "/login/oauth2/code/google")
-                .build()
-                .toUriString();
-
-        response.sendRedirect(authorizationUri);
+        response.sendRedirect("/oauth2/authorization/google");
     }
 
     @PostMapping("/refresh")

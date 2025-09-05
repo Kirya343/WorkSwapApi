@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.workswap.core.services.ListingService;
 import org.workswap.core.services.components.MultipartInputStreamFileResource;
+import org.workswap.core.services.query.ListingQueryService;
 import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.listingModels.Image;
 import org.workswap.datasource.central.repository.ImageRepository;
@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;;
 public class UploadController {
 
     private final ImageRepository imageRepository;
-    private final ListingService listingService;
+    private final ListingQueryService listingQueryService;
 
     private static final Logger logger = LoggerFactory.getLogger(UploadController.class);
 
@@ -108,7 +108,7 @@ public class UploadController {
     private Image saveImageInDb(String imageUrl, Long listingId) {
         Image image = new Image(
             imageUrl, 
-            listingId != null ? listingService.findListing(listingId.toString()) : null
+            listingId != null ? listingQueryService.findListing(listingId.toString()) : null
         );
         Image savedImage = imageRepository.save(image);
 
