@@ -115,7 +115,7 @@ public class ListingsController {
         return ResponseEntity.ok(Map.of("message", "Черновик объявления сохранён", "id", savedListing.getId()));
     }
 
-    @PostMapping("/{id}/favorite")
+    @PostMapping("/favorite/{id}")
     public ResponseEntity<?> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingQueryService.findListing(id.toString());
         User user = userService.findUser(authUser.getEmail());
@@ -234,7 +234,7 @@ public class ListingsController {
 
     @GetMapping("/translations/{id}")
     public ResponseEntity<?> getTranslations(@PathVariable Long id) {
-        List<Map<String, ListingTranslationDTO>> translations = listingQueryService.getTranslations(id);
+        Map<String, ListingTranslationDTO> translations = listingQueryService.getTranslations(id);
 
         return ResponseEntity.ok(Map.of("translations", translations));
     }
