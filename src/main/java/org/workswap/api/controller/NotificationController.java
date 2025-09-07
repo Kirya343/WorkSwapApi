@@ -11,7 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.workswap.datasource.central.model.Notification;
 import org.workswap.datasource.central.model.User;
-import org.workswap.common.dto.FullNotificationDTO;
+import org.workswap.common.dto.notification.FullNotificationDTO;
 import org.workswap.datasource.central.repository.NotificationRepository;
 import org.workswap.core.services.NotificationService;
 

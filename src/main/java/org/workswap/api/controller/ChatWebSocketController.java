@@ -15,10 +15,15 @@ import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.workswap.datasource.central.model.User;
-import org.workswap.common.dto.*;
+import org.workswap.common.dto.chat.ChatDTO;
+import org.workswap.common.dto.chat.ChatRequest;
+import org.workswap.common.dto.chat.MarkAsReadDTO;
+import org.workswap.common.dto.chat.MessageDTO;
+import org.workswap.common.dto.notification.NotificationDTO;
+import org.workswap.common.dto.user.InterlocutorInfoDTO;
 import org.workswap.datasource.central.model.chat.*;
 import org.workswap.core.services.NotificationService;
-import org.workswap.core.services.UserService;
+import org.workswap.core.services.query.UserQueryService;
 import org.workswap.core.services.ChatService;
 
 import java.security.Principal;
@@ -34,7 +39,7 @@ public class ChatWebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final SimpUserRegistry simpUserRegistry;
     private final ChatService chatService;
-    private final UserService userService;
+    private final UserQueryService userQueryService;
     private final NotificationService notificationService;
 
     @MessageMapping("/chat.send")
@@ -43,7 +48,7 @@ public class ChatWebSocketController {
 
         System.out.println("messageDTO: " + messageDTO.getChatId());
 
-        User sender = userService.findUser(principal.getName());
+        User sender = userQueryService.findUser(principal.getName());
         Chat chat = chatService.getChatById(messageDTO.getChatId());
         Message message = chatService.sendMessage(chat, sender, messageDTO.getText());
 
@@ -97,7 +102,7 @@ public class ChatWebSocketController {
     public List<MessageDTO> loadMessagesForChat(@DestinationVariable Long chatId, Principal principal) {
         logger.info("Получение сообщений для разговора с ID: {}", chatId);
 
-        User currentUser = userService.findUser(principal.getName());
+        User currentUser = userQueryService.findUser(principal.getName());
 
         // Получаем разговор по ID
         Chat chat = chatService.getChatById(chatId);
@@ -125,7 +130,7 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.markAsRead")
     public void markAsRead(MarkAsReadDTO markAsReadDTO, Principal principal, @Header("locale") String lang) {
         Locale locale = Locale.of(lang);
-        User user = userService.findUser(principal.getName());
+        User user = userQueryService.findUser(principal.getName());
         Long chatId = markAsReadDTO.getChatId();
 
         chatService.markMessagesAsRead(chatId, user);
@@ -137,7 +142,7 @@ public class ChatWebSocketController {
     public void getChats(Principal principal, @Header("locale") String lang) {
         logger.info("Начата функция получения диалогов");
         Locale locale = Locale.of(lang);
-        User user = userService.findUser(principal.getName());
+        User user = userQueryService.findUser(principal.getName());
         List<ChatDTO> chats = chatService.getChatsDTOForUser(user, locale);
         logger.info("Получили разговоры в виде DTO");
         chats.stream()
@@ -155,7 +160,7 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.getInterlocutorInfo")
     @SendToUser("/queue/interlocutorInfo")
     public InterlocutorInfoDTO getInterlocutorInfo(ChatRequest request, Principal principal) {
-        User currentUser = userService.findUser(principal.getName());
+        User currentUser = userQueryService.findUser(principal.getName());
         Long chatId = request.getChatId();
 
         Chat chat = chatService.getChatById(chatId);

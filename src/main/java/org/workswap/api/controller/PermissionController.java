@@ -16,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.workswap.core.services.UserService;
+import org.workswap.core.services.command.UserCommandService;
+import org.workswap.core.services.query.UserQueryService;
 import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.user.Permission;
 import org.workswap.datasource.central.model.user.Role;
@@ -33,7 +34,8 @@ public class PermissionController {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
 
-    private final UserService userService;
+    private final UserQueryService userQueryService;
+    private final UserCommandService userCommandService;
 
     //пометить пермишном
     @GetMapping("/{id}")
@@ -115,10 +117,10 @@ public class PermissionController {
     @PostMapping("/user/role/add")
     public ResponseEntity<?> userAddRoles(@RequestParam Long userId, @RequestParam Long role) {
         
-        User user = userService.findUser(userId.toString());
+        User user = userQueryService.findUser(userId.toString());
         user.getRoles().add(roleRepository.findById(role).orElse(null));
 
-        userService.save(user);
+        userCommandService.save(user);
 
         return ResponseEntity.ok().build();
     }
@@ -127,10 +129,10 @@ public class PermissionController {
     @PostMapping("/user/role/remove")
     public ResponseEntity<?> userRemoveRole(@RequestParam Long userId, @RequestParam Long role) {
         
-        User user = userService.findUser(userId.toString());
+        User user = userQueryService.findUser(userId.toString());
         user.getRoles().remove(roleRepository.findById(role).orElse(null));
 
-        userService.save(user);
+        userCommandService.save(user);
 
         return ResponseEntity.ok().build();
     }

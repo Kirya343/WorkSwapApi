@@ -18,13 +18,17 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.workswap.common.dto.UserDTO;
-import org.workswap.core.services.UserService;
+import org.workswap.common.dto.user.UserDTO;
+import org.workswap.core.services.command.UserCommandService;
+import org.workswap.core.services.mapping.UserMappingService;
+import org.workswap.core.services.query.UserQueryService;
 import org.workswap.core.someClasses.WebhookSigner;
 import org.workswap.datasource.central.model.User;
 
@@ -38,12 +42,14 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/user")
 public class UsersController {
 
-    private final UserService userService;
+    private final UserCommandService userCommandService;
+    private final UserQueryService userQueryService;
+    private final UserMappingService userMappingService;
 
     @PreAuthorize("hasAuthority('CONNECT_TELEGRAM')")
     @PostMapping("/telegram/connect")
     public ResponseEntity<?> telegramConnect(@RequestHeader("X-User-Sub") String userSub) {
-        User user = userService.findUser(userSub);
+        User user = userQueryService.findUser(userSub);
         String email = user.getEmail();
 
         String body = "{\"websiteUserId\":\"" + email + "\"}";
@@ -68,8 +74,8 @@ public class UsersController {
 
             String linkUrl = json.path("data").path("linkUrl").asText();
 
-            user.setTelegramConnected(true);
-            userService.save(user);
+            user.getSettings().setTelegramConnected(true);
+            userCommandService.save(user);
 
             return ResponseEntity.ok(linkUrl); // Отправляем ссылку клиенту
 
@@ -82,12 +88,12 @@ public class UsersController {
     @PostMapping("/accept-terms")
     public ResponseEntity<?> acceptTerms(@RequestHeader("X-User-Sub") String userSub) {
 
-        User user = userService.findUser(userSub);
+        User user = userQueryService.findUser(userSub);
         
         user.setTermsAcceptanceDate(LocalDateTime.now());
         user.setTermsAccepted(true);
         
-        userService.save(user);
+        userCommandService.save(user);
         
         return ResponseEntity.ok().build();
     }
@@ -95,7 +101,7 @@ public class UsersController {
     @PreAuthorize("hasAuthority('DELETE_OWN_ACCOUNT')")
     @DeleteMapping("/delete-account")
     public ResponseEntity<?> deleteAccount(@RequestHeader("X-User-Sub") String userSub) {
-        userService.deleteUser(userService.findUser(userSub));
+        userCommandService.deleteUser(userQueryService.findUser(userSub));
 
         return ResponseEntity.ok().build();
     }
@@ -105,7 +111,7 @@ public class UsersController {
     public ResponseEntity<?> modifyUser(@PathVariable Long id,
                            @ModelAttribute User user) {
         try {
-            userService.save(user);
+            userCommandService.save(user);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity
@@ -118,7 +124,7 @@ public class UsersController {
     @GetMapping("/delete/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
-            userService.deleteUser(userService.findUser(id.toString()));
+            userCommandService.deleteUser(userQueryService.findUser(id.toString()));
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity
@@ -129,12 +135,17 @@ public class UsersController {
 
     @GetMapping("/current")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(Map.of("user", userService.convertToDto(user)));
+        return ResponseEntity.ok(Map.of("user", userMappingService.toDto(user)));
+    }
+
+    @GetMapping("/current/settings")
+    public ResponseEntity<?> getCurrentUserSettings(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(Map.of("user", userMappingService.toFullDto(user)));
     }
 
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id) {
-        return ResponseEntity.ok(Map.of("user", userService.convertToDto(userService.findUser(id.toString()))));
+        return ResponseEntity.ok(Map.of("user", userMappingService.toDto(userQueryService.findUser(id.toString()))));
     }
 
     //пометить пермишном
@@ -142,11 +153,22 @@ public class UsersController {
     public ResponseEntity<?> getRecentListings(
         @PathVariable int amount
     ) {
-        List<UserDTO> users = userService.getRecentUsers(amount)
+        List<UserDTO> users = userQueryService.getRecentUsers(amount)
                                          .stream()
-                                         .map(userService::convertToDto)
+                                         .map(userMappingService::toDto)
                                          .collect(Collectors.toList());
 
         return ResponseEntity.ok(Map.of("users", users));
+    }
+
+    @PatchMapping("/modify")
+    public ResponseEntity<?> modifyUser(
+            @AuthenticationPrincipal User user,
+            @RequestBody Map<String, Object> updates
+        ) {
+
+        userCommandService.modifyUserParam(user, updates);
+        
+        return ResponseEntity.ok(Map.of("message", "Объявление успешно обновлено"));
     }
 }

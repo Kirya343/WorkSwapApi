@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.workswap.common.dto.ImageDTO;
-import org.workswap.common.dto.ListingDTO;
-import org.workswap.common.dto.ListingTranslationDTO;
-import org.workswap.core.services.UserService;
+import org.workswap.common.dto.listing.ImageDTO;
+import org.workswap.common.dto.listing.ListingDTO;
+import org.workswap.common.dto.listing.ListingTranslationDTO;
 import org.workswap.core.services.command.ListingCommandService;
 import org.workswap.core.services.mapping.ListingMappingService;
 import org.workswap.core.services.query.ListingQueryService;
+import org.workswap.core.services.query.UserQueryService;
 import org.workswap.datasource.central.model.Listing;
 import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.chat.Chat;
@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 public class ListingsController {
     
     private final ChatRepository chatRepository;
-    private final UserService userService;
+    private final UserQueryService userQueryService;
 
     private final ListingQueryService listingQueryService;
     private final ListingCommandService listingCommandService;
@@ -118,7 +118,7 @@ public class ListingsController {
     @PostMapping("/favorite/{id}")
     public ResponseEntity<?> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingQueryService.findListing(id.toString());
-        User user = userService.findUser(authUser.getEmail());
+        User user = userQueryService.findUser(authUser.getEmail());
 
         listingCommandService.toggleFavorite(user, listing);
         return ResponseEntity.ok(Map.of("message", "Избранное обновлено"));
@@ -135,7 +135,7 @@ public class ListingsController {
     @GetMapping("/{id}/favorite/status")
     public ResponseEntity<?> isFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingQueryService.findListing(id.toString());
-        User user = userService.findUser(authUser.getEmail());
+        User user = userQueryService.findUser(authUser.getEmail());
 
         boolean isFavorite = listingQueryService.isFavorite(user, listing);
         return  ResponseEntity.ok(Map.of("isFavorite", isFavorite));

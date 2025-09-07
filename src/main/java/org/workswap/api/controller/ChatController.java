@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.datasource.central.model.Listing;
 import org.workswap.datasource.central.model.User;
-import org.workswap.common.dto.InterlocutorInfoDTO;
+import org.workswap.common.dto.user.InterlocutorInfoDTO;
 import org.workswap.datasource.central.model.chat.*;
 import org.workswap.datasource.central.repository.chat.ChatParticipantRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 import org.workswap.core.services.ChatService;
-import org.workswap.core.services.UserService;
 import org.workswap.core.services.query.ListingQueryService;
+import org.workswap.core.services.query.UserQueryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,7 +42,7 @@ public class ChatController {
     private final ChatRepository chatRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final MessageSource messageSource;
-    private final UserService userService;
+    private final UserQueryService userQueryService;
     private final ListingQueryService listingQueryService;
 
     @GetMapping("/get")
@@ -50,8 +50,8 @@ public class ChatController {
                                @RequestParam(value = "listingId", required = false) Long listingId,
                                @AuthenticationPrincipal User user) {
 
-        User currentUser = userService.findUser(user.getEmail());
-        User seller = userService.findUser(sellerId.toString());
+        User currentUser = userQueryService.findUser(user.getEmail());
+        User seller = userQueryService.findUser(sellerId.toString());
 
         if (seller == null || currentUser == null || currentUser.equals(seller)) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "Чат не найден"));

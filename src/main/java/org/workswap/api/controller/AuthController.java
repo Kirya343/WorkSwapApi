@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.workswap.core.services.UserService;
 import org.workswap.core.services.components.security.JwtIssuer;
 import org.workswap.core.services.components.security.JwtService;
+import org.workswap.core.services.query.UserQueryService;
 import org.workswap.datasource.central.model.User;
 
 import jakarta.servlet.http.Cookie;
@@ -35,7 +35,7 @@ public class AuthController {
 
     private final JwtIssuer jwtIssuer;
     private final JwtService jwtService; // твой сервис для парсинга и валидации refresh-токена
-    private final UserService userService;
+    private final UserQueryService userQueryService;
 
     @Value("${api.url}")
     private String apiUrl;
@@ -84,7 +84,7 @@ public class AuthController {
         }
 
         // 3. находим пользователя
-        User user = userService.findUser(email);
+        User user = userQueryService.findUser(email);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
         }

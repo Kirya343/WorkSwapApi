@@ -15,13 +15,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.workswap.common.dto.TaskCommentDTO;
-import org.workswap.common.dto.TaskDTO;
-import org.workswap.common.dto.UserDTO;
+import org.workswap.common.dto.task.TaskCommentDTO;
+import org.workswap.common.dto.task.TaskDTO;
+import org.workswap.common.dto.user.UserDTO;
 import org.workswap.common.enums.TaskStatus;
 import org.workswap.common.enums.TaskType;
 import org.workswap.core.services.TaskService;
-import org.workswap.core.services.UserService;
+import org.workswap.core.services.mapping.UserMappingService;
+import org.workswap.core.services.query.UserQueryService;
 import org.workswap.datasource.admin.model.Task;
 import org.workswap.datasource.admin.model.TaskComment;
 import org.workswap.datasource.admin.repository.TaskCommentRepository;
@@ -36,7 +37,8 @@ import lombok.RequiredArgsConstructor;
 public class TasksController {
     
     private final TaskRepository taskRepository;
-    private final UserService userService;
+    private final UserQueryService userQueryService;
+    private final UserMappingService userMappingService;
     private final TaskService taskService;
     private final TaskCommentRepository taskCommentRepository;
 
@@ -51,7 +53,7 @@ public class TasksController {
                              taskDescription, 
                              deadline, 
                              TaskType.valueOf(taskType), 
-                             userService.findUser(userSub).getId());
+                             userQueryService.findUser(userSub).getId());
 
         taskRepository.save(task);
 
@@ -69,7 +71,7 @@ public class TasksController {
     public ResponseEntity<?> pickupTask(@RequestParam Long taskId, @RequestHeader("X-User-Sub") String userSub) {
         Task task = taskService.findTask(taskId.toString());
 
-        task.setExecutorId(userService.findUser(userSub).getId());
+        task.setExecutorId(userQueryService.findUser(userSub).getId());
         task.setStatus(TaskStatus.IN_PROGRESS);
 
         taskRepository.save(task);
@@ -81,7 +83,7 @@ public class TasksController {
     @PostMapping("/complete")
     public ResponseEntity<?> completeTask(@RequestParam Long taskId, @RequestHeader("X-User-Sub") String userSub) {
         Task task = taskService.findTask(taskId.toString());
-        User user = userService.findUser(userSub);
+        User user = userQueryService.findUser(userSub);
 
         if (user.getId() != task.getExecutorId()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Вы можете завершать только свои задачи!");
@@ -118,7 +120,7 @@ public class TasksController {
                                             @RequestHeader("X-User-Sub") String userSub) {
         Task task = taskService.findTask(id.toString());
 
-        TaskComment comment = new TaskComment(commentContent, userService.findUser(userSub).getId(), task);
+        TaskComment comment = new TaskComment(commentContent, userQueryService.findUser(userSub).getId(), task);
 
         taskCommentRepository.save(comment);
         return ResponseEntity.ok().build();
@@ -131,7 +133,7 @@ public class TasksController {
 
         TaskComment comment = taskCommentRepository.findById(id).orElse(null);
         
-        if (comment.getAuthorId() != userService.findUser(userSub).getId()) {
+        if (comment.getAuthorId() != userQueryService.findUser(userSub).getId()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Вы можете удалять только свои комментарии!");
         }
 
@@ -172,10 +174,10 @@ public class TasksController {
 
         UserDTO executor = null;
         if(task.getExecutorId() != null) {
-            executor = userService.convertToDto(userService.findUser(task.getExecutorId().toString()));
+            executor = userMappingService.toDto(userQueryService.findUser(task.getExecutorId().toString()));
         }
 
-        UserDTO author = userService.convertToDto(userService.findUser(task.getAuthorId().toString()));
+        UserDTO author = userMappingService.toDto(userQueryService.findUser(task.getAuthorId().toString()));
 
         Map<String, Object> response = new HashMap<>();
 
