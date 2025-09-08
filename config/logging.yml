@@ -8,21 +8,23 @@ logging:
 
     org.workswap.main.controller.secure.OwnListingController: INFO
 
-    org.workswap.api.controller.UploadController: DEBUG
+    org.workswap.api.controller.UploadController: INFO
+    org.workswap.api.controller.AuthController: INFO
     
     org.workswap.core.services.UserService: INFO
-    org.workswap.core.services.ListingService: INFO
     org.workswap.core.services.ChatService: INFO
     org.workswap.core.services.CategoryService: INFO
     org.workswap.core.services.StatService: INFO
     org.workswap.core.services.LocalizationService: INFO
-    org.workswap.core.services.NotificationService: INFO
+    org.workswap.core.services.NotificationService: INFO 
+
+    org.workswap.core.services.query.ListingQueryService: INFO
     
     org.workswap.core.services.components.AuthService: INFO
     org.workswap.core.services.components.LangFileScheduler: INFO
 
-    org.workswap.core.services.components.security.CustomOAuth2SuccessHandler: DEBUG
+    org.workswap.core.services.components.security.CustomOAuth2SuccessHandler: INFO
 
     org.springframework.web.multipart: INFO
     org.springframework.web.servlet.resource: INFO
-    org.springframework.security: DEBUG
+    org.springframework.security: INFO

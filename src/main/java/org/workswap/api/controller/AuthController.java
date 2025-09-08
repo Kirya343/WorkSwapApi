@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final JwtIssuer jwtIssuer;
     private final JwtService jwtService; // твой сервис для парсинга и валидации refresh-токена
@@ -79,6 +83,8 @@ public class AuthController {
 
         // 2. валидируем refresh токен
         String email = jwtService.validateAndGetEmail(refreshToken);
+
+        logger.debug("email пользователя: {}", email);
         if (email == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
         }
@@ -99,8 +105,9 @@ public class AuthController {
             newCookie.setHttpOnly(true);
             // только для разработки для доступа без https
             newCookie.setSecure(false);
-            newCookie.setPath("/api/auth/refresh");
+            newCookie.setPath("/");
             newCookie.setMaxAge((int) Duration.ofDays(30).getSeconds());
+
             response.addCookie(newCookie);
 
             // 5. возвращаем access-токен в JSON
@@ -122,6 +129,6 @@ public class AuthController {
             .build();
 
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("message", "Вы успешно вышли из аккаунта"));
     }
 }

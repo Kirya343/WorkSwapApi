@@ -171,4 +171,15 @@ public class UsersController {
         
         return ResponseEntity.ok(Map.of("message", "Объявление успешно обновлено"));
     }
+
+    //создать кастомную роль временного юзера и сделать ей пермишн разрешающий использовать этот метод
+    @PatchMapping("/register")
+    public ResponseEntity<?> registerUser(
+            @AuthenticationPrincipal User user
+        ) {
+
+        userCommandService.registerUser(user);
+        
+        return ResponseEntity.ok(Map.of("message", "Объявление успешно обновлено"));
+    }
 }
