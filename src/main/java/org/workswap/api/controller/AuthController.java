@@ -136,6 +136,8 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
             .httpOnly(true)
             .secure(cookieSecure)
+            .domain(cookieDomain.isEmpty() ? null : cookieDomain)
+            .sameSite(cookieSameSite)
             .path("/")
             .maxAge(0) // удалить cookie
             .build();
