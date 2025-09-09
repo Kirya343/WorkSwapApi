@@ -44,6 +44,15 @@ public class AuthController {
     @Value("${api.url}")
     private String apiUrl;
 
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.domain}")
+    private String cookieDomain;
+
+    @Value("${app.cookie.sameSite}")
+    private String cookieSameSite;
+
     @GetMapping("/authorize")
     public void redirectToGoogle(@RequestParam(required = false, defaultValue = "/") String redirect,
                                  HttpServletRequest request,
@@ -101,20 +110,23 @@ public class AuthController {
 
             // (опционально) обновляем refresh-токен и кладем в cookie заново
             String newRefreshToken = jwtIssuer.issueRefreshToken(user);
-            Cookie newCookie = new Cookie("refreshToken", newRefreshToken);
-            newCookie.setHttpOnly(true);
-            // только для разработки для доступа без https
-            newCookie.setSecure(false);
-            newCookie.setPath("/");
-            newCookie.setMaxAge((int) Duration.ofDays(30).getSeconds());
 
-            response.addCookie(newCookie);
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .domain(cookieDomain.isEmpty() ? null : cookieDomain)
+                .sameSite(cookieSameSite)
+                .maxAge(Duration.ofDays(30))
+                .build();
+
+            response.addHeader("Set-Cookie", cookie.toString());
 
             // 5. возвращаем access-токен в JSON
             return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.internalServerError()
                     .body("Token generation error: " + e.getMessage());
         }
     }
@@ -123,7 +135,7 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
             .httpOnly(true)
-            .secure(true)
+            .secure(cookieSecure)
             .path("/")
             .maxAge(0) // удалить cookie
             .build();

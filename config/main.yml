@@ -52,3 +52,9 @@ backoffice:
 cloud:
   #url: http://localhost:8084
   url: https://cloud.workswap.org
+
+app:
+  cookie:
+    secure: false
+    domain: "" #".workswap.org"
+    sameSite: "Lax"

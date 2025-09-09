@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.common.dto.user.UserDTO;
+import org.workswap.common.enums.UserStatus;
 import org.workswap.core.services.command.UserCommandService;
 import org.workswap.core.services.mapping.UserMappingService;
 import org.workswap.core.services.query.UserQueryService;
@@ -135,7 +136,10 @@ public class UsersController {
 
     @GetMapping("/current")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(Map.of("user", userMappingService.toDto(user)));
+        if (user != null) {
+            return ResponseEntity.ok(Map.of("user", userMappingService.toDto(user)));
+        }
+        return ResponseEntity.internalServerError().body(Map.of("message", "Пользователь не найден"));
     }
 
     @GetMapping("/current/settings")
@@ -178,8 +182,16 @@ public class UsersController {
             @AuthenticationPrincipal User user
         ) {
 
-        userCommandService.registerUser(user);
+        if (user == null) {
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "Пользователь не найден"));
+        }
+
+        User updatedUser = userCommandService.registerUser(user);
+
+        if (updatedUser.getStatus() == UserStatus.ACTIVE) {
+            return ResponseEntity.ok(Map.of("success", true, "message", "Вы успешно зарегистрировались!"));
+        }
         
-        return ResponseEntity.ok(Map.of("message", "Объявление успешно обновлено"));
+        return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "Ошибка регистрации пользователя"));
     }
 }
