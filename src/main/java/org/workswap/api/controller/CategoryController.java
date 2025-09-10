@@ -93,7 +93,6 @@ public class CategoryController {
         }
     }
 
-    @PreAuthorize("hasAuthority('VIEW_CATEGORIES')")
     @GetMapping
     public ResponseEntity<?> categoryList() {
 
