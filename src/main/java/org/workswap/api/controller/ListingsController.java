@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.workswap.common.dto.listing.CatalogListingDTO;
 import org.workswap.common.dto.listing.ImageDTO;
 import org.workswap.common.dto.listing.ListingDTO;
 import org.workswap.common.dto.listing.ListingTranslationDTO;
@@ -30,7 +30,6 @@ import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.chat.Chat;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 import jakarta.annotation.security.PermitAll;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -47,7 +46,7 @@ public class ListingsController {
 
     @PermitAll
     @GetMapping("/get/{id}")
-    public ResponseEntity<?> getListing(@PathVariable Long id, @RequestParam String locale, Model model) {
+    public ResponseEntity<?> getListing(@PathVariable Long id, @RequestParam String locale) {
 
         ListingDTO listing = listingQueryService.getListingDTO(id, locale);
 
@@ -60,7 +59,7 @@ public class ListingsController {
 
     @PermitAll
     @GetMapping("/chat/get/{chatId}")
-    public ResponseEntity<?> getListingFromChat(@PathVariable Long chatId, @RequestParam("locale") String lang, Model model) {
+    public ResponseEntity<?> getListingFromChat(@PathVariable Long chatId, @RequestParam("locale") String lang) {
 
         Chat conv = chatRepository.findById(chatId).orElse(null);
 
@@ -86,11 +85,9 @@ public class ListingsController {
             @RequestParam(required = false, defaultValue = "false") boolean hasReviews,
             @RequestParam(required = false) String location,
             @RequestParam("locale") String lang,
-            @AuthenticationPrincipal User user,
-            Model model,
-            HttpServletRequest request
+            @AuthenticationPrincipal User user
     ) {
-        List<ListingDTO> listings = listingQueryService.getSortedCatalogDto(
+        List<CatalogListingDTO> listings = listingQueryService.getSortedCatalogDto(
             user, location, lang, page, category, sortBy, searchQuery, hasReviews);
 
         Map<String, Object> response = new HashMap<>();

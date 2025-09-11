@@ -19,10 +19,7 @@ public class CorsConfig {
                             "https://workswap.org", 
                             "https://test.workswap.org",
                             "https://dash.workswap.org",
-                            "http://localhost:8080",
-                            "http://localhost:8082",
-                            "http://localhost:5173",
-                            "http://localhost:5174"
+                            "http://localhost:30000"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                         .allowedHeaders("*")

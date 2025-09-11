@@ -46,10 +46,12 @@ public class CategoryController {
     }
 
     @GetMapping("/path/{categoryId}")
-    public List<CategoryDTO> getCategoryPath(@PathVariable Long categoryId, Locale locale) {
-        return categoryService.getCategoryPath(categoryId).stream()
+    public ResponseEntity<?> getCategoryPath(@PathVariable Long categoryId, Locale locale) {
+        List<CategoryDTO> cats = categoryService.getCategoryPath(categoryId).stream()
                 .map(category -> categoryService.toDTO(category, locale))
                 .collect(Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("categories", cats));
     }
 
     //пометить пермишном
