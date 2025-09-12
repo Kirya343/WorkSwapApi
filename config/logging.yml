@@ -17,6 +17,7 @@ logging:
     org.workswap.core.services.StatService: INFO
     org.workswap.core.services.LocalizationService: INFO
     org.workswap.core.services.NotificationService: INFO 
+    org.workswap.core.services.ReviewService: INFO
 
     org.workswap.core.services.query.ListingQueryService: INFO
     

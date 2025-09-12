@@ -45,7 +45,7 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message","Не удалось создать отзыв"));
         }
 
-        statService.updateRatingForListing(listingQueryService.findListing(listingId.toString()));
+        if (listingId != null) statService.updateRatingForListing(listingQueryService.findListing(listingId.toString()));
 
         // Перенаправляем обратно на страницу объявления
         return ResponseEntity.ok(Map.of("message", "Отзыв успешно сохранён"));
