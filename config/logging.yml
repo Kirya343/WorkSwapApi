@@ -24,7 +24,8 @@ logging:
     org.workswap.core.services.components.AuthService: INFO
     org.workswap.core.services.components.LangFileScheduler: INFO
 
-    org.workswap.core.services.components.security.CustomOAuth2SuccessHandler: INFO
+    org.workswap.core.services.components.security.authentication.CustomOAuth2SuccessHandler: INFO
+    org.workswap.core.services.components.security.authentication.CustomOAuth2FailureHandler: INFO
 
     org.springframework.web.multipart: INFO
     org.springframework.web.servlet.resource: INFO

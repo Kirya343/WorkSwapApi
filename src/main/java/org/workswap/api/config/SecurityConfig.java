@@ -13,8 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.unit.DataSize;
-import org.workswap.core.services.components.security.CustomOAuth2SuccessHandler;
-import org.workswap.core.services.components.security.RolesPermissionsConverter;
+import org.workswap.core.services.components.security.JwtTokenConverter;
+import org.workswap.core.services.components.security.authentication.CustomOAuth2FailureHandler;
+import org.workswap.core.services.components.security.authentication.CustomOAuth2SuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -22,8 +23,9 @@ import org.workswap.core.services.components.security.RolesPermissionsConverter;
 @RequiredArgsConstructor
 public class SecurityConfig {
     
-    private final RolesPermissionsConverter converter;
+    private final JwtTokenConverter converter;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+    private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,7 +41,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler))
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(customOAuth2SuccessHandler)
+                .failureHandler(customOAuth2FailureHandler)
+            )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
             )
