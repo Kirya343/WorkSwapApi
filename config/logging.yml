@@ -1,12 +1,9 @@
 logging:
   level:
-    org.workswap.main.controller.advice.GlobalExceptionHandler: INFO
     org.workswap.config.SecurityConfig: INFO
 
-    org.workswap.main.controller.components.ChatController: INFO  
-    org.workswap.main.controller.components.ChatWebSocketController: INFO
-
-    org.workswap.main.controller.secure.OwnListingController: INFO
+    org.workswap.api.controller.ChatController: INFO  
+    org.workswap.api.controller.ChatWebSocketController: INFO
 
     org.workswap.api.controller.UploadController: INFO
     org.workswap.api.controller.AuthController: INFO

@@ -46,7 +46,7 @@ public class NotificationController {
         if (notification.getRecipient().getId() == user.getId()) {
             notification.setRead(true);
             notificationRepository.save(notification);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(Map.of("success", true));
         }
         
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Вы не являетесь получателем этого уведомления");

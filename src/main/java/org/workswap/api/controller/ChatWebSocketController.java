@@ -52,14 +52,15 @@ public class ChatWebSocketController {
         Chat chat = chatService.getChatById(messageDTO.getChatId());
         Message message = chatService.sendMessage(chat, sender, messageDTO.getText());
 
-        messagingTemplate.convertAndSend("/topic/messages/" + messageDTO.getChatId(),
+        messagingTemplate.convertAndSend(
+            "/topic/messages/" + messageDTO.getChatId(),
                 new MessageDTO(
                         message.getId(),
                         message.getText(),
                         message.getSentAt(),
                         message.getSender().getId(),
-                        message.getReceiver().getId(),
                         message.getChat().getId(),
+                        message.getReceiver().getId(),
                         message.isOwn(sender)
                 )
         );
@@ -83,24 +84,24 @@ public class ChatWebSocketController {
 
         if (isUserOnline(receiver)) {
             messagingTemplate.convertAndSendToUser(
-                    receiver.getSub(),
+                    receiver.getEmail(),
                     "/queue/notifications",
                     notification
             );
         } else {
-            notificationService.saveOfflineChatNotification(receiver.getSub(), notification);
+            notificationService.saveOfflineChatNotification(receiver.getEmail(), notification);
         }
     }
 
     // Проверка активности пользователя
     private boolean isUserOnline(User user) {
-        return simpUserRegistry.getUser(user.getSub()) != null;
+        return simpUserRegistry.getUser(user.getEmail()) != null;
     }
 
     @MessageMapping("/chat.loadMessages/{chatId}")
     @SendTo("/topic/history.messages/{chatId}")
     public List<MessageDTO> loadMessagesForChat(@DestinationVariable Long chatId, Principal principal) {
-        logger.info("Получение сообщений для разговора с ID: {}", chatId);
+        logger.debug("Получение сообщений для разговора с ID: {}", chatId);
 
         User currentUser = userQueryService.findUser(principal.getName());
 
@@ -135,16 +136,16 @@ public class ChatWebSocketController {
 
         chatService.markMessagesAsRead(chatId, user);
         // Уведомляем об обновлении
-        chatService.notifyChatUpdate(markAsReadDTO.getChatId(), user, locale);
+        chatService.notifyChatUpdate(chatId, user, locale);
     }
 
     @MessageMapping("/getChats")
     public void getChats(Principal principal, @Header("locale") String lang) {
-        logger.info("Начата функция получения диалогов");
+        logger.debug("Начата функция получения диалогов для {}", principal.getName());
         Locale locale = Locale.of(lang);
         User user = userQueryService.findUser(principal.getName());
         List<ChatDTO> chats = chatService.getChatsDTOForUser(user, locale);
-        logger.info("Получили разговоры в виде DTO");
+        logger.debug("Получили разговоры в виде DTO");
         chats.stream()
             .forEach(dto -> {
                 messagingTemplate.convertAndSendToUser(
@@ -152,7 +153,7 @@ public class ChatWebSocketController {
                     "/queue/chats",
                     dto
                 );
-                logger.info("Отправили диалог: " + dto.getInterlocutorName());
+                logger.debug("Отправили диалог: " + dto.getId());
             });
     }
 
