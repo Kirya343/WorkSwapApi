@@ -72,7 +72,7 @@ public class ListingsController {
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok().body(listing);
+        return ResponseEntity.ok(Map.of("listing", listing));
     }
 
     @PermitAll

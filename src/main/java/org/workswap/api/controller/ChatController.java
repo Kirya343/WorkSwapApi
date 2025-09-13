@@ -16,11 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.datasource.central.model.Listing;
 import org.workswap.datasource.central.model.User;
-import org.workswap.common.dto.user.InterlocutorInfoDTO;
+import org.workswap.common.dto.user.UserDTO;
 import org.workswap.datasource.central.model.chat.*;
 import org.workswap.datasource.central.repository.chat.ChatParticipantRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
 import org.workswap.core.services.ChatService;
+import org.workswap.core.services.mapping.UserMappingService;
 import org.workswap.core.services.query.ListingQueryService;
 import org.workswap.core.services.query.UserQueryService;
 
@@ -44,6 +45,7 @@ public class ChatController {
     private final MessageSource messageSource;
     private final UserQueryService userQueryService;
     private final ListingQueryService listingQueryService;
+    private final UserMappingService userMappingService;
 
     @GetMapping("/get")
     public ResponseEntity<?> startNewChat(@RequestParam("sellerId") Long sellerId,
@@ -87,7 +89,7 @@ public class ChatController {
 
     @PreAuthorize("hasAuthority('CHAT_GET_INTERLOCUTOR')")
     @GetMapping("/{id}/getInterlocutorInfo")
-    public InterlocutorInfoDTO getInterlocutorInfo(@PathVariable Long id, @AuthenticationPrincipal User user) {
+    public ResponseEntity<?> getInterlocutorInfo(@PathVariable Long id, @AuthenticationPrincipal User user) {
 
         Chat chat = chatRepository.findById(id).orElse(null);
         ChatParticipant participant = chatParticipantRepository.findByUserAndChat(user, chat);
@@ -96,9 +98,9 @@ public class ChatController {
             throw new AccessDeniedException("No access to this chat");
         }
 
-        User interlocutor = chat.getInterlocutor(user);
+        UserDTO interlocutor = userMappingService.toDto(chat.getInterlocutor(user));
 
-        return new InterlocutorInfoDTO(interlocutor.getName(), interlocutor.getAvatarUrl());
+        return ResponseEntity.ok(Map.of("interlocutor", interlocutor));
     }
 
     @PostMapping("/{id}/accept-terms")

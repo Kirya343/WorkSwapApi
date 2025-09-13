@@ -17,7 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,8 +48,7 @@ public class UsersController {
 
     @PreAuthorize("hasAuthority('CONNECT_TELEGRAM')")
     @PostMapping("/telegram/connect")
-    public ResponseEntity<?> telegramConnect(@RequestHeader("X-User-Sub") String userSub) {
-        User user = userQueryService.findUser(userSub);
+    public ResponseEntity<?> telegramConnect(@AuthenticationPrincipal User user) {
         String email = user.getEmail();
 
         String body = "{\"websiteUserId\":\"" + email + "\"}";
@@ -62,7 +60,7 @@ public class UsersController {
                 .build();
 
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://s1.qwer-host.xyz:25079/api/users/generate-token"))
+                .uri(URI.create("http://89.35.130.223:30003/api/users/generate-token"))
                 .header("Content-Type", "application/json")
                 .header("X-Webhook-Signature", signature)
                 .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
@@ -78,7 +76,7 @@ public class UsersController {
             user.getSettings().setTelegramConnected(true);
             userCommandService.save(user);
 
-            return ResponseEntity.ok(linkUrl); // Отправляем ссылку клиенту
+            return ResponseEntity.ok(Map.of("link", linkUrl)); // Отправляем ссылку клиенту
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,20 +103,6 @@ public class UsersController {
         userCommandService.deleteUser(userQueryService.findUser(userSub));
 
         return ResponseEntity.ok().build();
-    }
-
-    @PreAuthorize("hasAuthority('UPDATE_USER')")
-    @PostMapping("/update/{id}")
-    public ResponseEntity<?> modifyUser(@PathVariable Long id,
-                           @ModelAttribute User user) {
-        try {
-            userCommandService.save(user);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "message", "Ошибка при обновлении: " + e.getMessage()));
-        }
     }
 
     @PreAuthorize("hasAuthority('DELETE_USER')")
