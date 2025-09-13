@@ -84,6 +84,11 @@ public class UsersController {
         }
     }
 
+    @GetMapping("/telegram/check")
+    public ResponseEntity<?> checkTelegramConnect(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(Map.of("telegramConnected", user.getSettings().isTelegramConnected()));
+    }
+
     @PostMapping("/accept-terms")
     public ResponseEntity<?> acceptTerms(@RequestHeader("X-User-Sub") String userSub) {
 
