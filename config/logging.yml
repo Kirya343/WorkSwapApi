@@ -1,6 +1,7 @@
 logging:
   level:
     org.workswap.config.SecurityConfig: INFO
+    org.workswap.config.WebSocketConfig: INFO
 
     org.workswap.api.controller.ChatController: INFO  
     org.workswap.api.controller.ChatWebSocketController: INFO
@@ -23,6 +24,7 @@ logging:
 
     org.workswap.core.services.components.security.authentication.CustomOAuth2SuccessHandler: INFO
     org.workswap.core.services.components.security.authentication.CustomOAuth2FailureHandler: INFO
+    org.workswap.core.services.components.security.AuthChannelInterceptor: INFO
 
     org.springframework.web.multipart: INFO
     org.springframework.web.servlet.resource: INFO

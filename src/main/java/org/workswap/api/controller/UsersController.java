@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.common.dto.user.UserDTO;
@@ -90,9 +89,7 @@ public class UsersController {
     }
 
     @PostMapping("/accept-terms")
-    public ResponseEntity<?> acceptTerms(@RequestHeader("X-User-Sub") String userSub) {
-
-        User user = userQueryService.findUser(userSub);
+    public ResponseEntity<?> acceptTerms(@AuthenticationPrincipal User user) {
         
         user.setTermsAcceptanceDate(LocalDateTime.now());
         user.setTermsAccepted(true);
@@ -103,24 +100,12 @@ public class UsersController {
     }
 
     @PreAuthorize("hasAuthority('DELETE_OWN_ACCOUNT')")
-    @DeleteMapping("/delete-account")
-    public ResponseEntity<?> deleteAccount(@RequestHeader("X-User-Sub") String userSub) {
-        userCommandService.deleteUser(userQueryService.findUser(userSub));
+    @DeleteMapping("/current/delete")
+    public ResponseEntity<?> deleteAccount(@AuthenticationPrincipal User user) {
+        String email = new String(user.getEmail());
+        userCommandService.deleteUser(userQueryService.findUser(user.getEmail()));
 
-        return ResponseEntity.ok().build();
-    }
-
-    @PreAuthorize("hasAuthority('DELETE_USER')")
-    @GetMapping("/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        try {
-            userCommandService.deleteUser(userQueryService.findUser(id.toString()));
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "message", "Ошибка при удалении: " + e.getMessage()));
-        }
+        return ResponseEntity.ok(Map.of("success", true, "message", "Аккаунт " + email + " успешно удалён!"));
     }
 
     @GetMapping("/current")

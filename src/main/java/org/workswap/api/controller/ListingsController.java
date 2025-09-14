@@ -69,7 +69,7 @@ public class ListingsController {
         }
 
         if (listing == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.ok(Map.of("message", "Объявление не найдено"));
         }
 
         return ResponseEntity.ok(Map.of("listing", listing));
