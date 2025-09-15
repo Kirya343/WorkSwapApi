@@ -58,3 +58,6 @@ app:
     secure: false
     domain: "" #".workswap.org"
     sameSite: "Lax"
+
+tgbot:
+  url: http://89.35.130.223:30003

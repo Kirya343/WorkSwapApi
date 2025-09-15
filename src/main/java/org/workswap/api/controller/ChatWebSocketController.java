@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequiredArgsConstructor
 public class ChatWebSocketController {
+
     private static final Logger logger = LoggerFactory.getLogger(ChatWebSocketController.class);
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -44,9 +45,7 @@ public class ChatWebSocketController {
 
     @MessageMapping("/chat.send")
     public void sendMessage(MessageDTO messageDTO, Principal principal, @Header("locale") String lang) throws AccessDeniedException {
-        Locale locale = Locale.of(lang);
-
-        System.out.println("messageDTO: " + messageDTO.getChatId());
+        Locale locale = Locale.of(lang);;
 
         User sender = userQueryService.findUser(principal.getName());
         Chat chat = chatService.getChatById(messageDTO.getChatId());
@@ -83,12 +82,14 @@ public class ChatWebSocketController {
         chatService.notifyChatUpdate(message.getChat().getId(), receiver, locale);
 
         if (isUserOnline(receiver)) {
+            logger.debug("Пользователь {} онлайн, отправляем уведомление", receiver.getEmail());
             messagingTemplate.convertAndSendToUser(
                     receiver.getEmail(),
                     "/queue/notifications",
                     notification
             );
         } else {
+            logger.debug("Пользователь {} офлайн, сохраняем уведомление", receiver.getEmail());
             notificationService.saveOfflineChatNotification(receiver.getEmail(), notification);
         }
     }
