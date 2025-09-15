@@ -78,7 +78,7 @@ public class ListingsController {
     @PermitAll
     @GetMapping("/catalog")
     public ResponseEntity<?> sortCatalogAjax(
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String searchQuery,
@@ -88,7 +88,7 @@ public class ListingsController {
             @AuthenticationPrincipal User user
     ) {
         List<CatalogListingDTO> listings = listingQueryService.getSortedCatalogDto(
-            user, location, lang, page, category, sortBy, searchQuery, hasReviews);
+            user, location, lang, page, categoryId, sortBy, searchQuery, hasReviews);
 
         Map<String, Object> response = new HashMap<>();
 

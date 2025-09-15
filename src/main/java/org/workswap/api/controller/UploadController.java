@@ -27,7 +27,7 @@ import org.workswap.core.services.components.MultipartInputStreamFileResource;
 import org.workswap.core.services.query.ListingQueryService;
 import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.listingModels.Image;
-import org.workswap.datasource.central.repository.ImageRepository;
+import org.workswap.datasource.central.repository.listing.ImageRepository;
 
 import lombok.RequiredArgsConstructor;;
 
