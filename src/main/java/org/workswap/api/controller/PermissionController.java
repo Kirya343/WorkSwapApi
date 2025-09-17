@@ -1,11 +1,10 @@
 package org.workswap.api.controller;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +15,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.workswap.common.dto.permission.PermissionDTO;
+import org.workswap.common.dto.permission.RoleDTO;
+import org.workswap.core.services.command.PermissionCommandSevice;
 import org.workswap.core.services.command.UserCommandService;
+import org.workswap.core.services.query.PermissionQueryService;
 import org.workswap.core.services.query.UserQueryService;
 import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.user.Permission;
@@ -36,6 +39,34 @@ public class PermissionController {
 
     private final UserQueryService userQueryService;
     private final UserCommandService userCommandService;
+    private final PermissionQueryService permissionQueryService;
+    private final PermissionCommandSevice permissionCommandSevice;
+
+    @GetMapping
+    public ResponseEntity<?> getPermissions() {
+
+        List<PermissionDTO> perms = permissionQueryService.getAllPermissionDtos();
+
+        return ResponseEntity.ok(Map.of("permissions", perms));
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<?> getRoles() {
+
+        List<RoleDTO> roles = permissionQueryService.getAllRoleDtos();
+
+        return ResponseEntity.ok(Map.of("roles", roles));
+    }
+
+    @GetMapping("/{id}/get")
+    public ResponseEntity<?> getPermissionsByRole(@PathVariable Long id) {
+
+        Role role = permissionQueryService.findRole(id.toString());
+
+        List<PermissionDTO> perms = permissionQueryService.getPermissionDtosByRole(role);
+
+        return ResponseEntity.ok(Map.of("permissions", perms));
+    }
 
     //пометить пермишном
     @GetMapping("/{id}")
@@ -52,47 +83,15 @@ public class PermissionController {
     //пометить пермишном
     @PutMapping("/{roleId}/save")
     public ResponseEntity<?> savePermissionsForRole(
-            @PathVariable Long roleId,
-            @RequestBody List<String> permissionNames) {
-        
-        try {
-            // Валидация входных данных
-            if (permissionNames == null) {
-                return ResponseEntity.badRequest()
-                    .body("Список разрешений не может быть null");
-            }
+        @PathVariable Long roleId,
+        @RequestBody List<PermissionDTO> permissions
+    ) {
 
-            // Поиск роли
-            Role role = roleRepository.findById(roleId).orElse(null);
-            if (role == null) {
-                return ResponseEntity.notFound().build();
-            }
+        Role role = permissionQueryService.findRole(roleId.toString());
 
-            // Парсинг и валидация разрешений
-            Set<Permission> newPermissions = new HashSet<>();
-            
-            for (String permName : permissionNames) {
-                if (permName == null || permName.trim().isEmpty()) {
-                    continue; // Пропускаем пустые имена
-                }
-                
-                Permission permission = permissionRepository.findByName(permName.trim());
-                if (permission == null) {
-                    return ResponseEntity.badRequest()
-                        .body("Разрешение '" + permName + "' не найдено");
-                }
-                newPermissions.add(permission);
-            }
+        permissionCommandSevice.updateRolePermissions(role, permissions);
 
-            role.setPermissions(newPermissions);
-            roleRepository.save(role);
-
-            return ResponseEntity.ok().build();
-
-        } catch (Exception e) {
-            System.err.println("Ошибка при сохранении разрешений: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Внутренняя ошибка сервера");
-        }
+        return ResponseEntity.ok(Map.of("message", "Разрешения для роли сохранены"));
     }
 
     @PreAuthorize("hasAuthority('CREATE_ROLES')")
@@ -101,7 +100,7 @@ public class PermissionController {
         Role role = new Role(roleName);
         roleRepository.save(role);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("message", "Роль создана"));
     }
 
     @PreAuthorize("hasAuthority('CREATE_PERMISSIONS')")
@@ -110,7 +109,7 @@ public class PermissionController {
         Permission perm = new Permission(permissionName);
         permissionRepository.save(perm);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("message", "Разрешение создано"));
     }
 
     @PreAuthorize("hasAuthority('ADD_USER_ROLE')")
