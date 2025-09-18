@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.workswap.common.dto.LocationDTO;
 import org.workswap.datasource.central.model.listingModels.Location;
 import org.workswap.datasource.central.repository.LocationRepository;
+
+import jakarta.annotation.security.PermitAll;
+
 import org.workswap.core.services.LocationService;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +44,7 @@ public class LocationController {
     }
 
     @GetMapping("/countries")
+    @PermitAll
     public ResponseEntity<?> getCountires(Locale locale) {
 
         List<LocationDTO> locs = locationService.getCountries()
@@ -52,6 +56,7 @@ public class LocationController {
     }
 
     @GetMapping("/cities/{coutryId}")
+    @PermitAll
     public ResponseEntity<?> getChildCategories(@PathVariable Long coutryId, Locale locale) {
 
         List<LocationDTO> locs = locationService.getCities(coutryId)
@@ -62,7 +67,8 @@ public class LocationController {
         return ResponseEntity.ok(Map.of("locations", locs));
     }
 
-    @GetMapping("/getlocation/{locationId}")
+    @GetMapping("/{locationId}/get")
+    @PermitAll
     public ResponseEntity<?> getCategoryPath(@PathVariable Long locationId, Locale locale) {
 
         LocationDTO loc = locationService.toDTO(locationRepository.findById(locationId).orElse(null));
@@ -70,8 +76,8 @@ public class LocationController {
         return ResponseEntity.ok(Map.of("location", loc));
     }
 
-    @PreAuthorize("hasAuthority('CREATE_LOCATION')")
     @PostMapping("/add")
+    @PreAuthorize("hasAuthority('CREATE_LOCATION')")
     public ResponseEntity<?> addLocation(@RequestParam(required = false) Long countryId,
                                 @RequestParam String name) {
         try {
@@ -87,8 +93,8 @@ public class LocationController {
         }
     }
 
-    @PreAuthorize("hasAuthority('DELETE_LOCATION')")
     @GetMapping("/{id}/delete")
+    @PreAuthorize("hasAuthority('DELETE_LOCATION')")
     public ResponseEntity<?> deleteLocation(@PathVariable Long id) {
         try {
             locationRepository.deleteById(id);

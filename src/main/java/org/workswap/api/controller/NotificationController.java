@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.workswap.datasource.central.model.Notification;
@@ -26,6 +27,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping("/for-user")
+    @PreAuthorize("hasAuthority('GET_NOTIFICATIONS')")
     public ResponseEntity<?> getNotification(@AuthenticationPrincipal User user) {
         if(user != null) {
             List<FullNotificationDTO> notifications = notificationRepository.findByRecipient(user).stream()
@@ -40,6 +42,7 @@ public class NotificationController {
     }
 
     @PostMapping("/{id}/read")
+    @PreAuthorize("hasAuthority('READ_NOTIFICATION')")
     public ResponseEntity<?> markAsReadNotification(@PathVariable Long id, @AuthenticationPrincipal User user) {
         Notification notification = notificationRepository.findById(id).orElse(null); 
 

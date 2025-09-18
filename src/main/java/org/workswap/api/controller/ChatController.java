@@ -20,6 +20,9 @@ import org.workswap.common.dto.user.UserDTO;
 import org.workswap.datasource.central.model.chat.*;
 import org.workswap.datasource.central.repository.chat.ChatParticipantRepository;
 import org.workswap.datasource.central.repository.chat.ChatRepository;
+
+import jakarta.annotation.security.PermitAll;
+
 import org.workswap.core.services.ChatService;
 import org.workswap.core.services.mapping.UserMappingService;
 import org.workswap.core.services.query.ListingQueryService;
@@ -48,9 +51,12 @@ public class ChatController {
     private final UserMappingService userMappingService;
 
     @GetMapping("/get")
-    public ResponseEntity<?> startNewChat(@RequestParam("sellerId") Long sellerId,
-                               @RequestParam(value = "listingId", required = false) Long listingId,
-                               @AuthenticationPrincipal User user) {
+    @PermitAll
+    public ResponseEntity<?> startNewChat(
+        @RequestParam("sellerId") Long sellerId,
+        @RequestParam(value = "listingId", required = false) Long listingId,
+        @AuthenticationPrincipal User user
+    ) {
 
         User currentUser = userQueryService.findUser(user.getEmail());
         User seller = userQueryService.findUser(sellerId.toString());
@@ -72,7 +78,12 @@ public class ChatController {
     }
 
     @GetMapping("/{id}/chat-terms")
-    public ResponseEntity<?> getTermsState(@PathVariable Long id, @AuthenticationPrincipal User user, Locale locale) {
+    @PreAuthorize("hasAuthority('CHAT_ACCEPT_TERMS')")
+    public ResponseEntity<?> getTermsState(
+        @PathVariable Long id, 
+        @AuthenticationPrincipal User user, 
+        Locale locale
+    ) {
 
         Chat chat = chatRepository.findById(id).orElse(null);
 

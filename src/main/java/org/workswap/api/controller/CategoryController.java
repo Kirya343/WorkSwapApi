@@ -21,6 +21,7 @@ import org.workswap.core.services.CategoryService;
 import org.workswap.datasource.central.model.listingModels.Category;
 import org.workswap.datasource.central.repository.CategoryRepository;
 
+import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,8 +33,35 @@ public class CategoryController {
 
     //перенести сервис в сервис
     private final CategoryRepository categoryRepository;
+    
+    @GetMapping
+    @PermitAll
+    public ResponseEntity<?> categoryList() {
+
+        Locale locale = Locale.of("ru");
+
+        List<CategoryDTO> categories = categoryRepository.findAll()
+                                                          .stream()
+                                                          .map(category -> categoryService.toDTO(category, locale))
+                                                          .collect(Collectors.toList());
+
+        return ResponseEntity.ok().body(Map.of("categories", categories));
+    }
+
+    @GetMapping("/root")
+    @PermitAll
+    public ResponseEntity<?> rootCategoryList(@RequestParam String locale) {
+
+        List<CategoryDTO> rootCategories = categoryService.getRootCategories()
+                                                          .stream()
+                                                          .map(category -> categoryService.toDTO(category, Locale.of("locale")))
+                                                          .collect(Collectors.toList());
+
+        return ResponseEntity.ok().body(Map.of("rootCategories", rootCategories));
+    }
 
     @GetMapping("/children/{parentId}")
+    @PermitAll
     public List<CategoryDTO> getChildCategories(@PathVariable Long parentId, Locale locale) {
         return categoryService.getChildCategories(parentId).stream()
                 .map(category -> categoryService.toDTO(category, locale))
@@ -41,11 +69,13 @@ public class CategoryController {
     }
 
     @GetMapping("/is-leaf/{categoryId}")
+    @PermitAll
     public boolean isLeafCategory(@PathVariable Long categoryId) {
         return categoryService.isLeafCategory(categoryId);
     }
 
     @GetMapping("/path/{categoryId}")
+    @PermitAll
     public ResponseEntity<?> getCategoryPath(@PathVariable Long categoryId, Locale locale) {
         List<CategoryDTO> cats = categoryService.getCategoryPath(categoryId).stream()
                 .map(category -> categoryService.toDTO(category, locale))
@@ -93,29 +123,5 @@ public class CategoryController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("errorMessage", "Ошибка при удалении локации"));
         }
-    }
-
-    @GetMapping
-    public ResponseEntity<?> categoryList() {
-
-        Locale locale = Locale.of("ru");
-
-        List<CategoryDTO> categories = categoryRepository.findAll()
-                                                          .stream()
-                                                          .map(category -> categoryService.toDTO(category, locale))
-                                                          .collect(Collectors.toList());
-
-        return ResponseEntity.ok().body(Map.of("categories", categories));
-    }
-
-    @GetMapping("/root")
-    public ResponseEntity<?> rootCategoryList(@RequestParam String locale) {
-
-        List<CategoryDTO> rootCategories = categoryService.getRootCategories()
-                                                          .stream()
-                                                          .map(category -> categoryService.toDTO(category, Locale.of("locale")))
-                                                          .collect(Collectors.toList());
-
-        return ResponseEntity.ok().body(Map.of("rootCategories", rootCategories));
     }
 }

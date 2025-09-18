@@ -25,6 +25,7 @@ import org.workswap.core.services.components.security.JwtService;
 import org.workswap.core.services.query.UserQueryService;
 import org.workswap.datasource.central.model.User;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -54,6 +55,7 @@ public class AuthController {
     private String cookieSameSite;
 
     @GetMapping("/authorize")
+    @PermitAll
     public void redirectToGoogle(@RequestParam(required = false, defaultValue = "/") String redirect,
                                  HttpServletRequest request,
                                  HttpServletResponse response) throws IOException {
@@ -72,6 +74,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @PermitAll
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         // 1. достаем cookie
         Cookie[] cookies = request.getCookies();
@@ -132,6 +135,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @PermitAll
     public ResponseEntity<?> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
             .httpOnly(true)

@@ -42,8 +42,8 @@ public class TasksController {
     private final TaskService taskService;
     private final TaskCommentRepository taskCommentRepository;
 
-    @PreAuthorize("hasAuthority('CREATE_TASK')")
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('CREATE_TASK')")
     public ResponseEntity<?> createTask(@RequestParam String taskName,
                                 @RequestParam String taskDescription,
                                 @RequestParam String taskType,
@@ -60,14 +60,14 @@ public class TasksController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_TASK')")
     @PostMapping("/{id}/update")
+    @PreAuthorize("hasAuthority('UPDATE_TASK')")
     public ResponseEntity<?> updateTask(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('PICKUP_TASK')")
     @PostMapping("/pickup")
+    @PreAuthorize("hasAuthority('PICKUP_TASK')")
     public ResponseEntity<?> pickupTask(@RequestParam Long taskId, @RequestHeader("X-User-Sub") String userSub) {
         Task task = taskService.findTask(taskId.toString());
 
@@ -79,8 +79,8 @@ public class TasksController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('COMPLETE_TASK')")
     @PostMapping("/complete")
+    @PreAuthorize("hasAuthority('COMPLETE_TASK')")
     public ResponseEntity<?> completeTask(@RequestParam Long taskId, @RequestHeader("X-User-Sub") String userSub) {
         Task task = taskService.findTask(taskId.toString());
         User user = userQueryService.findUser(userSub);
@@ -96,8 +96,8 @@ public class TasksController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('CANCEL_TASK')")
     @PostMapping("/cancel")
+    @PreAuthorize("hasAuthority('CANCEL_TASK')")
     public ResponseEntity<?> cancelTask(@RequestParam Long taskId, @RequestHeader("X-User-Sub") String userSub) {
         Task task = taskService.findTask(taskId.toString());
         
@@ -107,14 +107,14 @@ public class TasksController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('DELETE_TASK')")
     @PostMapping("/{id}/delete")
+    @PreAuthorize("hasAuthority('DELETE_TASK')")
     public ResponseEntity<?> deleteTask(@PathVariable Long id, @RequestHeader("X-User-Sub") String userSub) {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('CREATE_TASK_COMMENT')")
     @PostMapping("/{id}/comment")
+    @PreAuthorize("hasAuthority('CREATE_TASK_COMMENT')")
     public ResponseEntity<?> commentToTask(@PathVariable Long id,
                                             @RequestParam String commentContent, 
                                             @RequestHeader("X-User-Sub") String userSub) {
@@ -126,8 +126,8 @@ public class TasksController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('DELETE_TASK_COMMENT')")
     @PostMapping("/comment/delete")
+    @PreAuthorize("hasAuthority('DELETE_TASK_COMMENT')")
     public ResponseEntity<?> deleteCommentToTask(@RequestParam Long id, 
                                                 @RequestHeader("X-User-Sub") String userSub) {
 
@@ -141,8 +141,8 @@ public class TasksController {
         return ResponseEntity.ok().build();
     }
 
-    //пометить пермишном
     @GetMapping("/metadata")
+    @PreAuthorize("hasAuthority('GET_TASK_METADATA')")
     public ResponseEntity<?> getTaskSettings() {
 
         TaskType[] taskTypeList = TaskType.values();
@@ -151,8 +151,8 @@ public class TasksController {
         return ResponseEntity.ok().body(Map.of("taskStatusList", taskStatusList, "taskTypeList", taskTypeList));
     }
 
-    //пометить пермишном
     @GetMapping("/get-tasks")
+    @PreAuthorize("hasAuthority('GET_TASKS')")
     public ResponseEntity<?> getTasksTable(
         @RequestParam(required = false, defaultValue = "created") String sort, 
         @RequestParam(required = false) String type,
@@ -167,8 +167,8 @@ public class TasksController {
         return ResponseEntity.ok(Map.of("tasks", tasks));
     }
 
-    @PreAuthorize("hasAuthority('VIEW_TASK_DETAILS')")
     @GetMapping("/{id}/details")
+    @PreAuthorize("hasAuthority('VIEW_TASK_DETAILS')")
     public ResponseEntity<?> getTaskDetailsFragment(@PathVariable Long id) {
         TaskDTO task = taskService.convertToDto(taskService.findTask(id.toString()));
 
@@ -192,8 +192,8 @@ public class TasksController {
         return ResponseEntity.ok().body(response); // путь и имя фрагмента
     }
 
-    @PreAuthorize("hasAuthority('VIEW_TASK_COMMENTS')")
     @GetMapping("/{id}/comments")
+    @PreAuthorize("hasAuthority('VIEW_TASK_COMMENTS')")
     public ResponseEntity<?> getTaskComments(@PathVariable Long id) {
         List<TaskCommentDTO> comments = taskCommentRepository.findAllByTaskId(id)
                                                              .stream()

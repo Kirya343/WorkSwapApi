@@ -13,6 +13,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -46,6 +47,7 @@ public class UploadController {
 
     //пометить пермишном
     @PostMapping("/upload/listing-image")
+    @PreAuthorize("hasAuthority('UPLOAD_LISTING_IMAGE')")
     public ResponseEntity<?> uploadListingImage(
             @RequestParam("image") MultipartFile file,
             @RequestParam(required = false) Long listingId,
@@ -71,7 +73,6 @@ public class UploadController {
         }
     }
 
-    // Загружаем изображение в облачный сервис и возвращаем URL
     private String uploadToCloud(MultipartFile file, Long listingId, String userSub) throws IOException {
         String url = cloudUrl + "/cloud/save/listing-image";
 
@@ -115,8 +116,8 @@ public class UploadController {
         return savedImage;
     }
 
-    //пометить пермишном
     @DeleteMapping("/delete/listing-image")
+    @PreAuthorize("hasAuthority('DELETE_LISTING_IMAGE')")
     public ResponseEntity<?> deleteListingImage(@RequestParam Long imageId, @RequestParam String imageUrl, @AuthenticationPrincipal User user) {
         
         String message = deleteImageFromCloud(imageUrl, user.getSub());

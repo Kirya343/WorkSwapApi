@@ -1,9 +1,7 @@
 package org.workswap.api.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +41,7 @@ public class PermissionController {
     private final PermissionCommandSevice permissionCommandSevice;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('GET_ALL_PERMISSIONS')")
     public ResponseEntity<?> getPermissions() {
 
         List<PermissionDTO> perms = permissionQueryService.getAllPermissionDtos();
@@ -51,6 +50,7 @@ public class PermissionController {
     }
 
     @GetMapping("/roles")
+    @PreAuthorize("hasAuthority('GET_ALL_ROLES')")
     public ResponseEntity<?> getRoles() {
 
         List<RoleDTO> roles = permissionQueryService.getAllRoleDtos();
@@ -59,6 +59,7 @@ public class PermissionController {
     }
 
     @GetMapping("/{id}/get")
+    @PreAuthorize("hasAuthority('GET_PERMISSIONS_BY_ROLE')")
     public ResponseEntity<?> getPermissionsByRole(@PathVariable Long id) {
 
         Role role = permissionQueryService.findRole(id.toString());
@@ -68,20 +69,8 @@ public class PermissionController {
         return ResponseEntity.ok(Map.of("permissions", perms));
     }
 
-    //пометить пермишном
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getPermisstinsByRole(@PathVariable Long id) {
-        
-        Role role = roleRepository.findById(id).orElse(null);
-        Set<Permission> perms = role.getPermissions();
-
-        List<Permission> permsList = new ArrayList<>(perms);
-
-        return ResponseEntity.ok().body(permsList);
-    }
-
-    //пометить пермишном
     @PutMapping("/{roleId}/save")
+    @PreAuthorize("hasAuthority('UPDATE_PERMISSIONS_BY_ROLE')")
     public ResponseEntity<?> savePermissionsForRole(
         @PathVariable Long roleId,
         @RequestBody List<PermissionDTO> permissions
@@ -94,8 +83,8 @@ public class PermissionController {
         return ResponseEntity.ok(Map.of("message", "Разрешения для роли сохранены"));
     }
 
-    @PreAuthorize("hasAuthority('CREATE_ROLES')")
     @PostMapping("/create/role")
+    @PreAuthorize("hasAuthority('CREATE_ROLES')")
     public ResponseEntity<?> createRole(@RequestParam String roleName) {
         Role role = new Role(roleName);
         roleRepository.save(role);
@@ -103,8 +92,8 @@ public class PermissionController {
         return ResponseEntity.ok(Map.of("message", "Роль создана"));
     }
 
-    @PreAuthorize("hasAuthority('CREATE_PERMISSIONS')")
     @PostMapping("/create/permission")
+    @PreAuthorize("hasAuthority('CREATE_PERMISSIONS')")
     public ResponseEntity<?> createPermission(@RequestParam String permissionName) {
         Permission perm = new Permission(permissionName);
         permissionRepository.save(perm);
@@ -112,24 +101,26 @@ public class PermissionController {
         return ResponseEntity.ok(Map.of("message", "Разрешение создано"));
     }
 
-    @PreAuthorize("hasAuthority('ADD_USER_ROLE')")
     @PostMapping("/user/role/add")
-    public ResponseEntity<?> userAddRoles(@RequestParam Long userId, @RequestParam Long role) {
+    @PreAuthorize("hasAuthority('ADD_USER_ROLE')")
+    public ResponseEntity<?> userAddRoles(@RequestParam Long userId, @RequestParam Long roleId) {
         
+        Role role = permissionQueryService.findRole(roleId.toString());
         User user = userQueryService.findUser(userId.toString());
-        user.getRoles().add(roleRepository.findById(role).orElse(null));
+        user.getRoles().add(role);
 
         userCommandService.save(user);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(Map.of("message", "Роль " + role.getName() + " пользователя удалена"));
     }
 
-    @PreAuthorize("hasAuthority('REMOVE_USER_ROLE')")
     @PostMapping("/user/role/remove")
-    public ResponseEntity<?> userRemoveRole(@RequestParam Long userId, @RequestParam Long role) {
+    @PreAuthorize("hasAuthority('REMOVE_USER_ROLE')")
+    public ResponseEntity<?> userRemoveRole(@RequestParam Long userId, @RequestParam Long roleId) {
         
+        Role role = permissionQueryService.findRole(roleId.toString());
         User user = userQueryService.findUser(userId.toString());
-        user.getRoles().remove(roleRepository.findById(role).orElse(null));
+        user.getRoles().remove(role);
 
         userCommandService.save(user);
 

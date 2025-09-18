@@ -34,6 +34,7 @@ import org.workswap.datasource.central.model.User;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -45,8 +46,8 @@ public class UsersController {
     private final UserQueryService userQueryService;
     private final UserMappingService userMappingService;
 
-    @PreAuthorize("hasAuthority('CONNECT_TELEGRAM')")
     @PostMapping("/telegram/connect")
+    @PreAuthorize("hasAuthority('CONNECT_TELEGRAM')")
     public ResponseEntity<?> telegramConnect(@AuthenticationPrincipal User user) {
         String email = user.getEmail();
 
@@ -84,11 +85,13 @@ public class UsersController {
     }
 
     @GetMapping("/telegram/check")
+    @PreAuthorize("hasAuthority('CHECK_TELEGRAM_CONNECTED')")
     public ResponseEntity<?> checkTelegramConnect(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(Map.of("telegramConnected", user.getSettings().isTelegramConnected()));
     }
 
     @PostMapping("/accept-terms")
+    @PreAuthorize("hasAuthority('ACCEPT_TERMS')")
     public ResponseEntity<?> acceptTerms(@AuthenticationPrincipal User user) {
         
         user.setTermsAcceptanceDate(LocalDateTime.now());
@@ -99,8 +102,8 @@ public class UsersController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('DELETE_OWN_ACCOUNT')")
     @DeleteMapping("/current/delete")
+    @PreAuthorize("hasAuthority('DELETE_OWN_ACCOUNT')")
     public ResponseEntity<?> deleteAccount(@AuthenticationPrincipal User user) {
         String email = new String(user.getEmail());
         userCommandService.deleteUser(userQueryService.findUser(user.getEmail()));
@@ -109,6 +112,7 @@ public class UsersController {
     }
 
     @GetMapping("/current")
+    @PreAuthorize("hasAuthority('GET_CURRENT_USER')")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User user) {
         if (user != null) {
             return ResponseEntity.ok(Map.of("user", userMappingService.toDto(user)));
@@ -117,17 +121,19 @@ public class UsersController {
     }
 
     @GetMapping("/current/settings")
+    @PreAuthorize("hasAuthority('GET_CURRENT_USER_SETTINGS')")
     public ResponseEntity<?> getCurrentUserSettings(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(Map.of("user", userMappingService.toFullDto(user)));
     }
 
     @GetMapping("/get/{id}")
+    @PermitAll
     public ResponseEntity<?> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(Map.of("user", userMappingService.toDto(userQueryService.findUser(id.toString()))));
     }
 
-    //пометить пермишном
     @GetMapping("/recent/{amount}")
+    @PreAuthorize("hasAuthority('GET_RECENT_USERS')")
     public ResponseEntity<?> getRecentListings(
         @PathVariable int amount
     ) {
@@ -140,6 +146,7 @@ public class UsersController {
     }
 
     @PatchMapping("/modify")
+    @PreAuthorize("hasAuthority('UPDATE_USER_SETTINGS')")
     public ResponseEntity<?> modifyUser(
             @AuthenticationPrincipal User user,
             @RequestBody Map<String, Object> updates
@@ -152,6 +159,7 @@ public class UsersController {
 
     //создать кастомную роль временного юзера и сделать ей пермишн разрешающий использовать этот метод
     @PatchMapping("/register")
+    @PermitAll //@PreAuthorize("hasAuthority('REGISTER_CURRENT_USER')")
     public ResponseEntity<?> registerUser(
             @AuthenticationPrincipal User user
         ) {

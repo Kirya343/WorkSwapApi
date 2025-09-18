@@ -13,6 +13,7 @@ import org.workswap.common.enums.PriceType;
 import org.workswap.config.LocalisationConfig.LanguageUtils;
 import org.workswap.datasource.central.model.User;
 
+import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class MetadataSettingsController {
 
     @GetMapping("/price-types")
+    @PermitAll
     public ResponseEntity<?> getPriceTypes() {
 
         var types = Arrays.stream(PriceType.values())
@@ -34,6 +36,7 @@ public class MetadataSettingsController {
     }
 
     @GetMapping("/languages")
+    @PermitAll
     public ResponseEntity<?> getLanguages(@AuthenticationPrincipal User user) {
 
         List<String> langs = user.getLanguages();

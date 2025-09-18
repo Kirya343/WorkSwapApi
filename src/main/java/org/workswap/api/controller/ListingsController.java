@@ -44,8 +44,8 @@ public class ListingsController {
     private final ListingCommandService listingCommandService;
     private final ListingMappingService listingMappingService;
 
-    @PermitAll
     @GetMapping("/get/{id}")
+    @PermitAll
     public ResponseEntity<?> getListing(@PathVariable Long id, @RequestParam String locale) {
 
         ListingDTO listing = listingQueryService.getListingDTO(id, locale);
@@ -57,8 +57,8 @@ public class ListingsController {
         return ResponseEntity.ok().body(Map.of("listing", listing));
     }
 
-    @PermitAll
     @GetMapping("/chat/get/{chatId}")
+    @PreAuthorize("hasAuthority('GET_LISTING_BY_CHAT')")
     public ResponseEntity<?> getListingFromChat(@PathVariable Long chatId, @RequestParam("locale") String lang) {
 
         Chat conv = chatRepository.findById(chatId).orElse(null);
@@ -75,8 +75,8 @@ public class ListingsController {
         return ResponseEntity.ok(Map.of("listing", listing));
     }
 
-    @PermitAll
     @GetMapping("/catalog")
+    @PermitAll
     public ResponseEntity<?> sortCatalogAjax(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "date") String sortBy,
@@ -98,6 +98,7 @@ public class ListingsController {
     }
 
     @GetMapping("/drafts")
+    @PreAuthorize("hasAuthority('VIEW_LISTINGS_DRAFTS')")
     public ResponseEntity<?> getDraftListings(@AuthenticationPrincipal User user, @RequestParam String locale) {
 
         List<ListingDTO> drafts = listingQueryService.getDrafts(user, locale);
@@ -106,6 +107,7 @@ public class ListingsController {
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('CREATE_LISTING')")
     public ResponseEntity<?> createListing(@AuthenticationPrincipal User authUser) {
         Listing listing = new Listing(authUser);
         Listing savedListing = listingCommandService.saveAndReturn(listing);
@@ -113,6 +115,7 @@ public class ListingsController {
     }
 
     @PostMapping("/favorite/{id}")
+    @PreAuthorize("hasAuthority('FAVORITE_LISTING')")
     public ResponseEntity<?> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingQueryService.findListing(id.toString());
         User user = userQueryService.findUser(authUser.getEmail());
@@ -122,6 +125,7 @@ public class ListingsController {
     }
 
     @PostMapping("/publish/{id}")
+    @PreAuthorize("hasAuthority('PUBLISH_LISTING')")
     public ResponseEntity<?> publishListing(@PathVariable Long id) {
         Listing listing = listingQueryService.findListing(id.toString());
         listing.setTemporary(false);
@@ -130,6 +134,7 @@ public class ListingsController {
     }
 
     @GetMapping("/{id}/favorite/status")
+    @PreAuthorize("hasAuthority('CHECK_FAVORITE_LISTING')")
     public ResponseEntity<?> isFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingQueryService.findListing(id.toString());
         User user = userQueryService.findUser(authUser.getEmail());
@@ -139,6 +144,7 @@ public class ListingsController {
     }
 
     @DeleteMapping("/{id}/delete")
+    @PreAuthorize("hasAuthority('DELETE_LISTING')")
     public ResponseEntity<?> deleteListing(
             @PathVariable Long id,
             @AuthenticationPrincipal User user
@@ -160,26 +166,8 @@ public class ListingsController {
         }
     }
 
-    @PreAuthorize("hasAuthority('UPDATE_LISTING')")
-    @PostMapping("/update/{id}")
-    public ResponseEntity<?> modifyListing(@PathVariable Long id) {
-        try {
-            listingCommandService.save(listingQueryService.findListing(id.toString()));
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.ok().body("Ошибка при обновлении объявления: " + e.getMessage());
-        }
-    }
-
-    @PreAuthorize("hasAuthority('DELETE_LISTING')")
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteListing(@PathVariable Long id) {
-        listingCommandService.delete(listingQueryService.findListing(id.toString()));
-        return ResponseEntity.ok(Map.of("message", "Объявление удалено"));
-    }
-
-    //пометить пермишном
     @GetMapping("/recent/{amount}")
+    @PreAuthorize("hasAuthority('GET_RECENT_LISTINGS')")
     public ResponseEntity<?> getRecentListings(
         @PathVariable int amount, 
         @RequestParam String locale
@@ -190,6 +178,7 @@ public class ListingsController {
     }
 
     @GetMapping("/my-listings")
+    @PreAuthorize("hasAuthority('GET_OWN_LISTINGS')")
     public ResponseEntity<?> getMyListings(
         @AuthenticationPrincipal User user,
         @RequestParam String locale
@@ -200,6 +189,7 @@ public class ListingsController {
     }
 
     @GetMapping("/by-user/{id}")
+    @PermitAll
     public ResponseEntity<?> getListingsByUser(
         @PathVariable Long id,
         @RequestParam String locale
@@ -210,6 +200,7 @@ public class ListingsController {
     }
 
     @GetMapping("/favorites")
+    @PreAuthorize("hasAuthority('GET_FAVORITES_LISTINGS')")
     public ResponseEntity<?> getFavorites(
         @AuthenticationPrincipal User user,
         @RequestParam String locale
@@ -220,6 +211,7 @@ public class ListingsController {
     }
 
     @GetMapping("/images/{id}")
+    @PermitAll
     public ResponseEntity<?> getImages(
         @AuthenticationPrincipal User user,
         @PathVariable Long id
@@ -230,6 +222,7 @@ public class ListingsController {
     }
 
     @GetMapping("/translations/{id}")
+    @PermitAll
     public ResponseEntity<?> getTranslations(@PathVariable Long id) {
         Map<String, ListingTranslationDTO> translations = listingQueryService.getTranslations(id);
 
@@ -237,6 +230,7 @@ public class ListingsController {
     }
 
     @PatchMapping("/modify/{id}")
+    @PreAuthorize("hasAuthority('UPDATE_LISTING')")
     public ResponseEntity<?> modifyListing(
             @PathVariable Long id,
             @RequestBody Map<String, Object> updates

@@ -18,6 +18,7 @@ import org.workswap.core.services.StatService;
 import org.workswap.core.services.query.ListingQueryService;
 import org.workswap.datasource.central.model.Review;
 
+import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -29,8 +30,8 @@ public class ReviewController {
     private final StatService statService;
     private final ListingQueryService listingQueryService;
 
-    @PreAuthorize("hasAuthority('CREATE_REVIEW')")
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('CREATE_REVIEW')")
     public ResponseEntity<?> addReview(
         @RequestParam(required = false) Long listingId,
         @RequestParam(required = false) Long profileId,
@@ -52,6 +53,7 @@ public class ReviewController {
     }
 
     @GetMapping("/list")
+    @PermitAll
     public ResponseEntity<?> getRewiewsByItem(
         @RequestParam(required = false) Long listingId,
         @RequestParam(required = false) Long profileId

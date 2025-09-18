@@ -31,12 +31,17 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/**",
-                    "/oauth2/**", 
-                    "/login/**"
-                ).permitAll()
+
+                // для методов api
+                .requestMatchers("/api/**").permitAll()
+
+                // для авторизации
+                .requestMatchers("/oauth2/**", "/login/**").permitAll()
+
+                // для установки подключения к вебсокету
                 .requestMatchers("/ws/**").permitAll()
+
+                // для вызова методов вебсокета
                 .requestMatchers( "/app/**").authenticated()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
@@ -48,6 +53,7 @@ public class SecurityConfig {
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
             )
+            .anonymous(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .build();
