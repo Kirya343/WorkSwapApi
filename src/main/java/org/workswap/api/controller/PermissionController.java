@@ -86,7 +86,7 @@ public class PermissionController {
     @PostMapping("/create/role")
     @PreAuthorize("hasAuthority('CREATE_ROLES')")
     public ResponseEntity<?> createRole(@RequestParam String roleName) {
-        Role role = new Role(roleName);
+        Role role = new Role(roleName, 0);
         roleRepository.save(role);
 
         return ResponseEntity.ok(Map.of("message", "Роль создана"));
