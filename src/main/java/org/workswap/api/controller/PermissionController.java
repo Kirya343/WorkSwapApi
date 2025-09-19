@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -73,18 +72,20 @@ public class PermissionController {
     @PreAuthorize("hasAuthority('UPDATE_PERMISSIONS_BY_ROLE')")
     public ResponseEntity<?> savePermissionsForRole(
         @PathVariable Long roleId,
-        @RequestBody List<PermissionDTO> permissions
+        @RequestParam Long permissionId,
+        @RequestParam boolean enabled
     ) {
 
         Role role = permissionQueryService.findRole(roleId.toString());
+        Permission permission = permissionQueryService.findPermission(permissionId.toString());
 
-        permissionCommandSevice.updateRolePermissions(role, permissions);
+        permissionCommandSevice.updateRolePermission(role, permission, enabled);
 
         return ResponseEntity.ok(Map.of("message", "Разрешения для роли сохранены"));
     }
 
     @PostMapping("/create/role")
-    @PreAuthorize("hasAuthority('CREATE_ROLES')")
+    @PreAuthorize("hasAuthority('CREATE_ROLE')")
     public ResponseEntity<?> createRole(@RequestParam String roleName) {
         Role role = new Role(roleName, 0);
         roleRepository.save(role);
@@ -93,12 +94,33 @@ public class PermissionController {
     }
 
     @PostMapping("/create/permission")
-    @PreAuthorize("hasAuthority('CREATE_PERMISSIONS')")
+    @PreAuthorize("hasAuthority('CREATE_PERMISSION')")
     public ResponseEntity<?> createPermission(@RequestParam String permissionName) {
         Permission perm = new Permission(permissionName);
         permissionRepository.save(perm);
 
         return ResponseEntity.ok(Map.of("message", "Разрешение создано"));
+    }
+
+    @PostMapping("/update/permission/{id}")
+    @PreAuthorize("hasAuthority('UPDATE_PERMISSION')")
+    public ResponseEntity<?> updatePermission(
+        @PathVariable Long id,
+        @RequestParam(required = false) String name, 
+        @RequestParam(required = false) String comment
+    ) {
+        Permission perm = permissionQueryService.findPermission(id.toString());
+
+        if (name != null) {
+            perm.setComment(comment);
+        }
+        if (comment != null) {
+            perm.setName(name);
+        }
+        
+        permissionRepository.save(perm);
+
+        return ResponseEntity.ok(Map.of("message", "Разрешение успешно обновлено", "status", "success"));
     }
 
     @PostMapping("/user/role/add")
