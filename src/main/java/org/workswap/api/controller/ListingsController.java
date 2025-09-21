@@ -1,10 +1,10 @@
 package org.workswap.api.controller;
 
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -152,15 +152,13 @@ public class ListingsController {
         try {
             Listing listing = listingQueryService.findListing(id.toString());
 
-            if (!listing.getAuthor().equals(user)) {
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Вы не можете удалить это объявление");
+            if (listing.getAuthor().getId() != user.getId()) {
+                throw new AccessDeniedException("Вы можете удалять только собственные объявления!");
             }
 
-            if (listing.getAuthor().equals(user)) {
-                listingCommandService.delete(listing);
-                return ResponseEntity.ok().body("Объявление успешно удалено!");
-            }
+            listingCommandService.delete(listing);
             return ResponseEntity.ok(Map.of("message", "Объявление успешно удалено!"));
+            
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("message", "Ошибка при удалении объявления!"));
         }
@@ -232,10 +230,12 @@ public class ListingsController {
     @PatchMapping("/modify/{id}")
     @PreAuthorize("hasAuthority('UPDATE_LISTING')")
     public ResponseEntity<?> modifyListing(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> updates
-    ) {
-        listingCommandService.modifyListingParam(id, updates);
+        @AuthenticationPrincipal User user,
+        @PathVariable Long id,
+        @RequestBody Map<String, Object> updates
+    ) throws AccessDeniedException {
+
+        listingCommandService.modifyListingParam(user, id, updates);
         
         return ResponseEntity.ok(Map.of("message", "Объявление успешно обновлено"));
     }

@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.core.services.LocalizationService;
 
@@ -103,8 +102,8 @@ public class LocalizationController {
                 .body(resource);
     }
 
-    @PreAuthorize("hasAuthority('CREATE_LOCALIZATION_POINT')")
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('CREATE_LOCALIZATION_POINT')")
     public ResponseEntity<?> createLocalizationPoint(@RequestParam String code,
                                                     @RequestParam String group,
                                                     @RequestParam("translations") String translationsRaw
@@ -132,8 +131,8 @@ public class LocalizationController {
         return ResponseEntity.ok(Map.of("success", true, "message", "Точка локализации успешно создана"));
     }
 
-    @PreAuthorize("hasAuthority('CREATE_LOCALIZATION_GROUP')")
     @PostMapping("/create-group")
+    @PreAuthorize("hasAuthority('CREATE_LOCALIZATION_GROUP')")
     public ResponseEntity<?> createLocalizationGroup(@RequestParam String group) {
         try {
             Path path = Paths.get("localization/" + group);
@@ -148,8 +147,8 @@ public class LocalizationController {
         }
     }
 
-    @PreAuthorize("hasAuthority('DELETE_LOCALIZATION_GROUP')")
     @PostMapping("/delete-group")
+    @PreAuthorize("hasAuthority('DELETE_LOCALIZATION_GROUP')")
     public ResponseEntity<?> deleteLocalizationGroup(@RequestParam String group) {
         try {
             Path dir = Paths.get("localization/" + group);
@@ -170,8 +169,8 @@ public class LocalizationController {
         }
     }
 
-    @PreAuthorize("hasAuthority('DELETE_LOCALIZATION_POINT')")
     @PostMapping("/delete")
+    @PreAuthorize("hasAuthority('DELETE_LOCALIZATION_POINT')")
     public ResponseEntity<?> deleteLocalizationPoint(@RequestParam String code) {
         try {
             localizationService.removeTranslation("localization", code);
@@ -184,9 +183,8 @@ public class LocalizationController {
         }
     }
 
-    @PreAuthorize("hasAuthority('CREATE_LOCALIZATION_POINT')")
     @PostMapping("/create-translation")
-    @ResponseBody
+    @PreAuthorize("hasAuthority('CREATE_LOCALIZATION_POINT')")
     public ResponseEntity<?> createLocalizationPointFetch(@RequestParam String code,
                                                           @RequestParam String group,
                                                           @RequestParam("translations") String translationsRaw) {
@@ -216,9 +214,8 @@ public class LocalizationController {
         }
     }
 
-    @PreAuthorize("hasAuthority('DELETE_LOCALIZATION_POINT')")
     @DeleteMapping("/delete-translation")
-    @ResponseBody
+    @PreAuthorize("hasAuthority('DELETE_LOCALIZATION_POINT')")
     public ResponseEntity<?> deleteLocalizationPointFetch(@RequestParam String code) {
         try {
             localizationService.removeTranslation("localization", code);

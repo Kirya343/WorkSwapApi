@@ -69,7 +69,7 @@ public class PermissionController {
     }
 
     @PutMapping("/{roleId}/save")
-    @PreAuthorize("hasAuthority('UPDATE_PERMISSIONS_BY_ROLE')")
+    @PreAuthorize("hasAuthority('MANAGE_PERMISSIONS')")
     public ResponseEntity<?> savePermissionsForRole(
         @PathVariable Long roleId,
         @RequestParam Long permissionId,

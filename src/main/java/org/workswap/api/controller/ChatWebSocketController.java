@@ -13,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.workswap.datasource.central.model.User;
 import org.workswap.common.dto.chat.ChatDTO;
@@ -44,6 +45,7 @@ public class ChatWebSocketController {
     private final NotificationService notificationService;
 
     @MessageMapping("/chat.send")
+    @PreAuthorize("hasAuthority('CHAT_SEND_MESSAGE')")
     public void sendMessage(MessageDTO messageDTO, Principal principal, @Header("locale") String lang) throws AccessDeniedException {
         Locale locale = Locale.of(lang);;
 
@@ -101,6 +103,7 @@ public class ChatWebSocketController {
 
     @MessageMapping("/chat.loadMessages/{chatId}")
     @SendTo("/topic/history.messages/{chatId}")
+    @PreAuthorize("hasAuthority('CHAT_LOAD_HISTORY')")
     public List<MessageDTO> loadMessagesForChat(@DestinationVariable Long chatId, Principal principal) {
         logger.debug("Получение сообщений для разговора с ID: {}", chatId);
 
@@ -130,6 +133,7 @@ public class ChatWebSocketController {
     }
 
     @MessageMapping("/chat.markAsRead")
+    @PreAuthorize("hasAuthority('CHAT_MARK_AS_READ')")
     public void markAsRead(MarkAsReadDTO markAsReadDTO, Principal principal, @Header("locale") String lang) {
         Locale locale = Locale.of(lang);
         User user = userQueryService.findUser(principal.getName());
@@ -141,6 +145,7 @@ public class ChatWebSocketController {
     }
 
     @MessageMapping("/getChats")
+    @PreAuthorize("hasAuthority('CHAT_GET_CHATS')")
     public void getChats(Principal principal, @Header("locale") String lang) {
         logger.debug("Начата функция получения диалогов для {}", principal.getName());
         Locale locale = Locale.of(lang);
@@ -161,6 +166,7 @@ public class ChatWebSocketController {
     @Transactional
     @MessageMapping("/chat.getInterlocutorInfo")
     @SendToUser("/queue/interlocutorInfo")
+    @PreAuthorize("hasAuthority('CHAT_GET_INTERLOCUTOR')")
     public InterlocutorInfoDTO getInterlocutorInfo(ChatRequest request, Principal principal) {
         User currentUser = userQueryService.findUser(principal.getName());
         Long chatId = request.getChatId();

@@ -7,9 +7,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.workswap.datasource.central.model.Notification;
 import org.workswap.datasource.central.model.User;
 import org.workswap.common.dto.notification.FullNotificationDTO;
@@ -44,14 +46,18 @@ public class NotificationController {
     @PostMapping("/{id}/read")
     @PreAuthorize("hasAuthority('READ_NOTIFICATION')")
     public ResponseEntity<?> markAsReadNotification(@PathVariable Long id, @AuthenticationPrincipal User user) {
-        Notification notification = notificationRepository.findById(id).orElse(null); 
+        Notification notification = notificationRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
 
-        if (notification.getRecipient().getId() == user.getId()) {
-            notification.setRead(true);
-            notificationRepository.save(notification);
-            return ResponseEntity.ok(Map.of("success", true));
+        if (!notification.getRecipient().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Вы не являетесь получателем этого уведомления");
         }
         
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Вы не являетесь получателем этого уведомления");
+        if (!notification.isRead()) {
+            notification.setRead(true);
+            notificationRepository.save(notification);
+        }
+        
+        return ResponseEntity.ok(Map.of("success", true));
     }
 }

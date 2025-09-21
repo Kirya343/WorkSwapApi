@@ -115,6 +115,7 @@ public class ChatController {
     }
 
     @PostMapping("/{id}/accept-terms")
+    @PreAuthorize("hasAuthority('CHAT_ACCEPT_TERMS')")
     public ResponseEntity<?> acceptTerms(@PathVariable Long id, @AuthenticationPrincipal User user) {
         Chat chat = chatRepository.findById(id).orElse(null);
         ChatParticipant participant = chatParticipantRepository.findByUserAndChat(user, chat);
@@ -128,6 +129,7 @@ public class ChatController {
     }
 
     @PostMapping("/temporary")
+    @PreAuthorize("hasAuthority('CLEAR_TEMPORARY_CHATS')")
     public ResponseEntity<Void> deleteTemporaryChat(@AuthenticationPrincipal User user) {
 
         logger.debug("Запрос на удаление временных диалогов от пользователя: {}", user.getName());

@@ -85,7 +85,7 @@ public class UsersController {
     }
 
     @GetMapping("/telegram/check")
-    @PreAuthorize("hasAuthority('CHECK_TELEGRAM_CONNECTED')")
+    @PreAuthorize("hasAuthority('CONNECT_TELEGRAM')")
     public ResponseEntity<?> checkTelegramConnect(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(Map.of("telegramConnected", user.getSettings().isTelegramConnected()));
     }
