@@ -18,15 +18,18 @@ logging:
     org.workswap.core.services.ReviewService: INFO
 
     org.workswap.core.services.query.ListingQueryService: INFO
-    org.workswap.core.services.command.PermissionCommandSevice: DEBUG
+    org.workswap.core.services.command.PermissionCommandSevice: INFO
     
     org.workswap.core.services.components.AuthService: INFO
     org.workswap.core.services.components.LangFileScheduler: INFO
 
-    org.workswap.core.services.components.security.authentication.CustomOAuth2SuccessHandler: INFO
+    org.workswap.core.services.components.security.authentication.CustomOAuth2SuccessHandler: DEBUG
     org.workswap.core.services.components.security.authentication.CustomOAuth2FailureHandler: INFO
     org.workswap.core.services.components.security.AuthChannelInterceptor: INFO
 
     org.springframework.web.multipart: INFO
     org.springframework.web.servlet.resource: INFO
     org.springframework.security: DEBUG
+
+    com.zaxxer.hikari: INFO
+    org.hibernate.SQL: INFO

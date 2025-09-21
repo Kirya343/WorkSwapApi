@@ -37,6 +37,8 @@ spring:
     basename: lang/messages
     encoding: UTF-8
     cache-duration: 0
+  lifecycle:
+    timeout-per-shutdown-phase: "20s"
 logging:
   pattern:
     console: "%d{HH:mm:ss yyyy-MM-dd} [%thread] %-5level %logger{36} - %msg%n"

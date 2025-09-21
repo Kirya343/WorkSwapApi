@@ -1,6 +1,7 @@
 package org.workswap.api.config;
 
 import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.unit.DataSize;
+import org.workswap.core.services.components.security.CookieBearerTokenResolver;
 import org.workswap.core.services.components.security.JwtTokenConverter;
 import org.workswap.core.services.components.security.authentication.CustomOAuth2FailureHandler;
 import org.workswap.core.services.components.security.authentication.CustomOAuth2SuccessHandler;
@@ -51,9 +53,15 @@ public class SecurityConfig {
                 .failureHandler(customOAuth2FailureHandler)
             )
             .oauth2ResourceServer(oauth2 -> oauth2
+                .bearerTokenResolver(new CookieBearerTokenResolver("accessToken"))
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"unauthorized\"}");
+                })
             )
-            .anonymous(Customizer.withDefaults())
+            .anonymous(anonymous -> anonymous.disable())
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .build();
