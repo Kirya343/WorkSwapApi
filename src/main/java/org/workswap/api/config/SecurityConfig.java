@@ -12,6 +12,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.unit.DataSize;
 import org.workswap.core.services.components.security.CookieBearerTokenResolver;
@@ -60,6 +61,9 @@ public class SecurityConfig {
                     response.setContentType("application/json");
                     response.getWriter().write("{\"error\":\"unauthorized\"}");
                 })
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .anonymous(anonymous -> anonymous.disable())
             .csrf(csrf -> csrf.disable())

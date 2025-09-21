@@ -28,7 +28,7 @@
 		<dependency>
             <groupId>org.workswap</groupId>
             <artifactId>workswap-core</artifactId>
-            <version>1.4.6</version>
+            <version>1.4.7</version>
         </dependency>
 
 		<dependency>
@@ -55,6 +55,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-messaging</artifactId>
         </dependency>
 	</dependencies>
 
