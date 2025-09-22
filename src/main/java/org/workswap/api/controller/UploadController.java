@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.workswap.core.services.command.ListingCommandService;
 import org.workswap.core.services.components.MultipartInputStreamFileResource;
 import org.workswap.core.services.query.ListingQueryService;
 import org.workswap.datasource.central.model.Listing;
@@ -40,6 +41,7 @@ public class UploadController {
 
     private final ImageRepository imageRepository;
     private final ListingQueryService listingQueryService;
+    private final ListingCommandService listingCommandService;
 
     private static final Logger logger = LoggerFactory.getLogger(UploadController.class);
 
@@ -121,6 +123,8 @@ public class UploadController {
         if (listing.getImagePath() == null) {
             listing.setImagePath(imageUrl);
         }
+        
+        listingCommandService.save(listing);
 
         return savedImage;
     }
