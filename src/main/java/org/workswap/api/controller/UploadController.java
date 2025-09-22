@@ -26,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.workswap.core.services.components.MultipartInputStreamFileResource;
 import org.workswap.core.services.query.ListingQueryService;
+import org.workswap.datasource.central.model.Listing;
 import org.workswap.datasource.central.model.User;
 import org.workswap.datasource.central.model.listingModels.Image;
 import org.workswap.datasource.central.repository.listing.ImageRepository;
@@ -107,11 +108,19 @@ public class UploadController {
 
     // Сохраняем Image в базе и возвращаем объект
     private Image saveImageInDb(String imageUrl, Long listingId) {
+
+        Listing listing = listingQueryService.findListing(listingId.toString());
+
         Image image = new Image(
             imageUrl, 
-            listingId != null ? listingQueryService.findListing(listingId.toString()) : null
+            listingId != null ? listing : null
         );
+
         Image savedImage = imageRepository.save(image);
+
+        if (listing.getImagePath() == null) {
+            listing.setImagePath(imageUrl);
+        }
 
         return savedImage;
     }
