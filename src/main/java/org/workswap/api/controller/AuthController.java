@@ -10,13 +10,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.workswap.core.services.command.UserCommandService;
 import org.workswap.core.services.components.security.AuthCookiesService;
 import org.workswap.core.services.components.security.JwtService;
 import org.workswap.core.services.query.UserQueryService;
@@ -38,6 +38,7 @@ public class AuthController {
     private final AuthCookiesService cookiesService;
     private final JwtService jwtService; // твой сервис для парсинга и валидации refresh-токена
     private final UserQueryService userQueryService;
+    private final UserCommandService userCommandService;
 
     @Value("${api.url}")
     private String apiUrl;
@@ -57,7 +58,7 @@ public class AuthController {
                                  HttpServletRequest request,
                                  HttpServletResponse response) throws IOException {
 
-        System.out.println("redirect: " + redirect);
+        logger.debug("redirect: " + redirect);
 
         // создаём state, можно зашифровать или просто сохранить в сессии
         String state = Base64.getUrlEncoder().withoutPadding()
@@ -67,53 +68,61 @@ public class AuthController {
 
         request.getSession().setAttribute("redirectUrl", encodedState);
 
+        String oldRefreshToken = getTokenFromCookies(request, "refreshToken");
+        Long userId = jwtService.validateAndGetUserId(oldRefreshToken);
+
+        request.getSession().setAttribute("tempUserId", userId);
+
         response.sendRedirect("/oauth2/authorization/google");
     }
 
     @PostMapping("/refresh")
     @PermitAll
     public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        // 1. достаем cookie
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No cookies found");
-        }
-
-        String refreshToken = Arrays.stream(cookies)
-                .filter(c -> "refreshToken".equals(c.getName()))
-                .map(Cookie::getValue)
-                .findFirst()
-                .orElse(null);
-
-        if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No refresh token");
-        }
-
-        // 2. валидируем refresh токен
-        String email = jwtService.validateAndGetEmail(refreshToken);
-
-        logger.debug("email пользователя: {}", email);
-        if (email == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
-        }
-
-        // 3. находим пользователя
-        User user = userQueryService.findUser(email);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-        }
-
+        logger.debug("Обновляем токен пользователя");
         try {
-            
-            cookiesService.setAuthCookies(response, user);
+            String refreshToken = getTokenFromCookies(request, "refreshToken");
+            logger.debug("Токен найден? {}", refreshToken);
+
+            Long userId = null;
+            if (refreshToken != null) {
+                userId = jwtService.validateAndGetUserId(refreshToken); // 2. валидируем refresh token и получаем email
+            }
+
+            logger.debug("userId: {}", userId);
+
+            User user = null;
+
+            if (userId != null) {
+                user = userQueryService.findUser(userId.toString());
+                logger.debug("Пользователь найден");
+            }
+
+            if (user == null) {
+                user = userCommandService.createTempUser();
+                logger.debug("Пользователь не найден, создаём временного");
+            }
+
+            logger.debug("Айди пользователя: {}", user.getId());
+
+            cookiesService.setAuthCookies(response, user); // 4. обновляем куки с токенами
 
             return ResponseEntity.ok().build();
-
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError()
                     .body("Token generation error: " + e.getMessage());
         }
+    }
+
+    private String getTokenFromCookies(HttpServletRequest request, String cookieName) {
+        if (request.getCookies() == null) return null;
+
+        return Arrays.stream(request.getCookies())
+                .filter(c -> cookieName.equals(c.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     @PostMapping("/logout")

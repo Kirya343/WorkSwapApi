@@ -75,8 +75,8 @@ public class ListingsController {
         return ResponseEntity.ok(Map.of("listing", listing));
     }
 
-    @GetMapping("/catalog")
-    @PermitAll
+    @GetMapping("/catalog") 
+    @PreAuthorize("hasAuthority('LOAD_CATALOG')")
     public ResponseEntity<?> sortCatalogAjax(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "date") String sortBy,
@@ -118,7 +118,7 @@ public class ListingsController {
     @PreAuthorize("hasAuthority('FAVORITE_LISTING')")
     public ResponseEntity<?> toggleFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingQueryService.findListing(id.toString());
-        User user = userQueryService.findUser(authUser.getEmail());
+        User user = userQueryService.findUser(authUser.getId().toString());
 
         listingCommandService.toggleFavorite(user, listing);
         return ResponseEntity.ok(Map.of("message", "Избранное обновлено"));
@@ -137,7 +137,7 @@ public class ListingsController {
     @PreAuthorize("hasAuthority('CHECK_FAVORITE_LISTING')")
     public ResponseEntity<?> isFavorite(@PathVariable Long id, @AuthenticationPrincipal User authUser) {
         Listing listing = listingQueryService.findListing(id.toString());
-        User user = userQueryService.findUser(authUser.getEmail());
+        User user = userQueryService.findUser(authUser.getId().toString());
 
         boolean isFavorite = listingQueryService.isFavorite(user, listing);
         return  ResponseEntity.ok(Map.of("isFavorite", isFavorite));
