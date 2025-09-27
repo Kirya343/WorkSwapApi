@@ -5,3 +5,4 @@ spring:
       - optional:file:./config/database.yml
       - optional:file:./config/main.yml
       - optional:file:./config/logging.yml
+      - optional:file:./config/rabbitmq.yml

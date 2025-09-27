@@ -15,10 +15,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.unit.DataSize;
-import org.workswap.core.services.components.security.CookieBearerTokenResolver;
-import org.workswap.core.services.components.security.JwtTokenConverter;
-import org.workswap.core.services.components.security.authentication.CustomOAuth2FailureHandler;
-import org.workswap.core.services.components.security.authentication.CustomOAuth2SuccessHandler;
+import org.workswap.core.services.security.CookieBearerTokenResolver;
+import org.workswap.core.services.security.JwtTokenConverter;
+import org.workswap.core.services.security.authentication.CustomOAuth2FailureHandler;
+import org.workswap.core.services.security.authentication.CustomOAuth2SuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -35,10 +35,9 @@ public class SecurityConfig {
         return http
             .authorizeHttpRequests(auth -> auth
 
-                // для методов api
-                .requestMatchers("/api/**").permitAll()
-
                 // для авторизации
+                .requestMatchers("/api/auth/refresh").permitAll()
+
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
 
                 // для установки подключения к вебсокету

@@ -21,8 +21,10 @@ import org.workswap.common.dto.listing.CatalogListingDTO;
 import org.workswap.common.dto.listing.ImageDTO;
 import org.workswap.common.dto.listing.ListingDTO;
 import org.workswap.common.dto.listing.ListingTranslationDTO;
+import org.workswap.common.dto.stat.ListingViewDTO;
 import org.workswap.core.services.command.ListingCommandService;
 import org.workswap.core.services.mapping.ListingMappingService;
+import org.workswap.core.services.producers.ListingViewProducer;
 import org.workswap.core.services.query.ListingQueryService;
 import org.workswap.core.services.query.UserQueryService;
 import org.workswap.datasource.central.model.Listing;
@@ -39,6 +41,8 @@ public class ListingsController {
     
     private final ChatRepository chatRepository;
     private final UserQueryService userQueryService;
+
+    private final ListingViewProducer listingViewProducer;
 
     private final ListingQueryService listingQueryService;
     private final ListingCommandService listingCommandService;
@@ -238,5 +242,16 @@ public class ListingsController {
         listingCommandService.modifyListingParam(user, id, updates);
         
         return ResponseEntity.ok(Map.of("message", "Объявление успешно обновлено"));
+    }
+
+    @PostMapping("/view/{id}")
+    @PermitAll
+    public ResponseEntity<?> viewListing(@PathVariable Long id, @AuthenticationPrincipal User user) {
+
+        ListingViewDTO dto = new ListingViewDTO(user.getId(), id);
+        
+        listingViewProducer.listingViewed(dto);
+
+        return ResponseEntity.ok(Map.of("message", "Просмотр сохранён"));
     }
 }

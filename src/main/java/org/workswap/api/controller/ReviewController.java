@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.common.dto.ReviewDTO;
 import org.workswap.core.services.ReviewService;
-import org.workswap.core.services.StatService;
-import org.workswap.core.services.query.ListingQueryService;
+import org.workswap.core.services.producers.ReviewProducer;
 import org.workswap.datasource.central.model.Review;
 
 import jakarta.annotation.security.PermitAll;
@@ -27,8 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewController {
 
     private final ReviewService reviewService;
-    private final StatService statService;
-    private final ListingQueryService listingQueryService;
+    private final ReviewProducer reviewProducer;
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('CREATE_REVIEW')")
@@ -46,7 +44,7 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message","Не удалось создать отзыв"));
         }
 
-        if (listingId != null) statService.updateRatingForListing(listingQueryService.findListing(listingId.toString()));
+        reviewProducer.reviewCreated(reviewService.convertToDTO(review));
 
         // Перенаправляем обратно на страницу объявления
         return ResponseEntity.ok(Map.of("message", "Отзыв успешно сохранён"));

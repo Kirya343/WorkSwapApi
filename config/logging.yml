@@ -23,10 +23,12 @@ logging:
     org.workswap.core.services.components.AuthService: INFO
     org.workswap.core.services.components.LangFileScheduler: INFO
 
-    org.workswap.core.services.components.security.authentication.CustomOAuth2SuccessHandler: INFO
-    org.workswap.core.services.components.security.authentication.CustomOAuth2FailureHandler: INFO
-    org.workswap.core.services.components.security.AuthChannelInterceptor: DEBUG
-    org.workswap.core.services.components.security.JwtTokenConverter: INFO
+    org.workswap.core.services.security.authentication.CustomOAuth2SuccessHandler: INFO
+    org.workswap.core.services.security.authentication.CustomOAuth2FailureHandler: INFO
+    org.workswap.core.services.security.AuthChannelInterceptor: DEBUG
+    org.workswap.core.services.security.JwtTokenConverter: INFO
+
+    org.workswap.core.services.rabbitmq.ReviewProducer: DEBUG
 
     org.springframework.web.multipart: INFO
     org.springframework.web.servlet.resource: INFO

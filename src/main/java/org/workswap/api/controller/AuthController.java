@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.workswap.core.services.command.UserCommandService;
-import org.workswap.core.services.components.security.AuthCookiesService;
-import org.workswap.core.services.components.security.JwtService;
+import org.workswap.core.services.security.AuthCookiesService;
+import org.workswap.core.services.security.JwtService;
 import org.workswap.core.services.query.UserQueryService;
 import org.workswap.datasource.central.model.User;
 

@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.workswap.datasource.stats.model.StatSnapshot;
-import org.workswap.datasource.stats.model.StatSnapshot.IntervalType;
-import org.workswap.datasource.stats.repository.StatsRepository;
+import org.workswap.common.enums.IntervalType;
+import org.workswap.datasource.stats.model.ListingStatSnapshot;
+import org.workswap.datasource.stats.repository.ListingStatRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StatsController {
 
-    private final StatsRepository statsRepository;
+    private final ListingStatRepository listingStatRepository;
 
     @GetMapping("/views")
     @PreAuthorize("hasAuthority('VIEW_LISTING_STATS')")
@@ -43,13 +43,13 @@ public class StatsController {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime fromTime = LocalDateTime.now().minusDays(days);
 
-        List<StatSnapshot> stats = statsRepository.findByListingIdAndIntervalTypeAndTimeAfter(
+        List<ListingStatSnapshot> stats = listingStatRepository.findByListingIdAndIntervalTypeAndTimeAfter(
                 listingId,
                 interval,
                 fromTime
         );
 
-        Optional<StatSnapshot> lastBefore = statsRepository.findTopByListingIdAndIntervalTypeAndTimeBeforeOrderByTimeDesc(
+        Optional<ListingStatSnapshot> lastBefore = listingStatRepository.findTopByListingIdAndIntervalTypeAndTimeBeforeOrderByTimeDesc(
                 listingId,
                 interval,
                 fromTime
@@ -60,7 +60,7 @@ public class StatsController {
             System.out.println("Вообще нет данных в базе даже до fromTime");
         }
 
-        int lastKnownViews = lastBefore.map(StatSnapshot::getViews).orElse(0);
+        int lastKnownViews = lastBefore.map(ListingStatSnapshot::getViews).orElse(0);
 
         System.out.println("Найдено снапшотов в базе: " + stats.size());
 
@@ -76,7 +76,7 @@ public class StatsController {
         Map<LocalDateTime, Integer> timeToViews = stats.stream()
             .collect(Collectors.toMap(
                 s -> roundToStep(s.getTime(), step),
-                StatSnapshot::getViews,
+                ListingStatSnapshot::getViews,
                 (a, b) -> b
             ));
 
