@@ -84,9 +84,9 @@ public class AuthController {
             String refreshToken = getTokenFromCookies(request, "refreshToken");
             logger.debug("Токен найден? {}", refreshToken);
 
-            Long userId = null;
+            String userId = null;
             if (refreshToken != null) {
-                userId = jwtService.validateAndGetUserId(refreshToken); // 2. валидируем refresh token и получаем email
+                userId = jwtService.validateAndGetUserIdStr(refreshToken); // 2. валидируем refresh token и получаем email
             }
 
             logger.debug("userId: {}", userId);
@@ -94,7 +94,7 @@ public class AuthController {
             User user = null;
 
             if (userId != null) {
-                user = userQueryService.findUser(userId.toString());
+                user = userQueryService.findUser(userId);
                 logger.debug("Пользователь найден");
             }
 

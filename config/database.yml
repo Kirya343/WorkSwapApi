@@ -10,7 +10,7 @@ spring:
     maximum-pool-size: 10
     idle-timeout: 600000
     max-lifetime: 1800000
-    leak-detection-threshold: 15000
+    leak-detection-threshold: 30000
     validation-timeout: 5000
     keepalive-time: 300000
   statistics-datasource:
@@ -24,7 +24,7 @@ spring:
     maximum-pool-size: 10
     idle-timeout: 600000
     max-lifetime: 1800000
-    leak-detection-threshold: 15000
+    leak-detection-threshold: 30000
     validation-timeout: 5000
     keepalive-time: 300000
   admin-datasource:
@@ -38,6 +38,6 @@ spring:
     maximum-pool-size: 10
     idle-timeout: 600000
     max-lifetime: 1800000
-    leak-detection-threshold: 15000
+    leak-detection-threshold: 30000
     validation-timeout: 5000
     keepalive-time: 300000

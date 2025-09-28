@@ -25,14 +25,14 @@ logging:
 
     org.workswap.core.services.security.authentication.CustomOAuth2SuccessHandler: INFO
     org.workswap.core.services.security.authentication.CustomOAuth2FailureHandler: INFO
-    org.workswap.core.services.security.AuthChannelInterceptor: DEBUG
+    org.workswap.core.services.security.AuthChannelInterceptor: INFO
     org.workswap.core.services.security.JwtTokenConverter: INFO
 
-    org.workswap.core.services.rabbitmq.ReviewProducer: DEBUG
+    org.workswap.core.services.rabbitmq.ReviewProducer: INFO
 
     org.springframework.web.multipart: INFO
     org.springframework.web.servlet.resource: INFO
-    org.springframework.security: DEBUG
+    org.springframework.security: INFO
 
     com.zaxxer.hikari: INFO
     org.hibernate.SQL: INFO
