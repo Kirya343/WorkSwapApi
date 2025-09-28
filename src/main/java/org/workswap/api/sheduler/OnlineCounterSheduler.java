@@ -2,6 +2,7 @@ package org.workswap.api.sheduler;
 
 import java.time.LocalDateTime;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.workswap.common.dto.stat.OnlineStatSnapshotDTO;
@@ -17,12 +18,18 @@ public class OnlineCounterSheduler {
     private final OnlineCounter onlineCounter;
     private final OnlineStatProducer onlineStatProducer;
 
+    @Value("${isTest}")
+    private boolean isTest;
+
     @Scheduled(fixedRate = 15000)
     public void saveOnlineAnalytic() {
-        OnlineStatSnapshotDTO dto = new OnlineStatSnapshotDTO();
-        dto.setOnline(onlineCounter.getCurrent());
-        dto.setTimestamp(LocalDateTime.now());
 
-        onlineStatProducer.sendOnlineStat(dto);
+        if (isTest == false) {
+            OnlineStatSnapshotDTO dto = new OnlineStatSnapshotDTO();
+            dto.setOnline(onlineCounter.getCurrent());
+            dto.setTimestamp(LocalDateTime.now());
+
+            onlineStatProducer.sendOnlineStat(dto);
+        }
     }
 }

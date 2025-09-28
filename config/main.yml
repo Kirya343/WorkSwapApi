@@ -63,3 +63,5 @@ app:
 
 tgbot:
   url: http://89.35.130.223:30003
+
+isTest: true
