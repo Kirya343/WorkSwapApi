@@ -28,7 +28,7 @@
 		<dependency>
             <groupId>org.workswap</groupId>
             <artifactId>workswap-core</artifactId>
-            <version>1.5.2</version>
+            <version>1.5.4</version>
         </dependency>
 
 		<dependency>

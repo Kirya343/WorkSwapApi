@@ -32,7 +32,7 @@ logging:
 
     org.springframework.web.multipart: INFO
     org.springframework.web.servlet.resource: INFO
-    org.springframework.security: INFO
+    org.springframework.security: DEBUG
 
     com.zaxxer.hikari: INFO
     org.hibernate.SQL: INFO
