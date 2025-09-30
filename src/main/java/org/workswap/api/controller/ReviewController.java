@@ -41,13 +41,17 @@ public class ReviewController {
         Review review = reviewService.createReview(authorId, profileId, listingId, rating, text);
 
         if (review == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message","Не удалось создать отзыв"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "message", "reviewCreate", 
+                    "status", "success"
+                ));
         }
 
         reviewProducer.reviewCreated(reviewService.convertToDTO(review));
 
         // Перенаправляем обратно на страницу объявления
-        return ResponseEntity.ok(Map.of("message", "Отзыв успешно сохранён"));
+        return ResponseEntity.ok(Map.of("message", "reviewCreate", "status", "success"));
     }
 
     @GetMapping("/list")

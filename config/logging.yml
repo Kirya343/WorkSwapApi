@@ -18,7 +18,8 @@ logging:
     org.workswap.core.services.ReviewService: INFO
 
     org.workswap.core.services.query.ListingQueryService: INFO
-    org.workswap.core.services.command.PermissionCommandSevice: INFO
+    org.workswap.core.services.command.PermissionCommandService: INFO
+    org.workswap.core.services.command.ListingCommandService: INFO
     
     org.workswap.core.services.components.AuthService: INFO
     org.workswap.core.services.components.LangFileScheduler: INFO
@@ -32,7 +33,7 @@ logging:
 
     org.springframework.web.multipart: INFO
     org.springframework.web.servlet.resource: INFO
-    org.springframework.security: DEBUG
+    org.springframework.security: INFO
 
     com.zaxxer.hikari: INFO
     org.hibernate.SQL: INFO

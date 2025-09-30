@@ -115,7 +115,10 @@ public class ListingsController {
     public ResponseEntity<?> createListing(@AuthenticationPrincipal User authUser) {
         Listing listing = new Listing(authUser);
         Listing savedListing = listingCommandService.saveAndReturn(listing);
-        return ResponseEntity.ok(Map.of("message", "Черновик объявления сохранён", "id", savedListing.getId()));
+        return ResponseEntity.ok(Map.of(
+            "message", "createDraft", 
+            "status", "success",
+            "id", savedListing.getId()));
     }
 
     @PostMapping("/favorite/{id}")
@@ -134,7 +137,7 @@ public class ListingsController {
         Listing listing = listingQueryService.findListing(id.toString());
         listing.setTemporary(false);
         listingCommandService.save(listing);
-        return ResponseEntity.ok(Map.of("message", "Объявление опубликовано"));
+        return ResponseEntity.ok(Map.of("message", "publish", "status", "success"));
     }
 
     @GetMapping("/{id}/favorite/status")
@@ -161,10 +164,10 @@ public class ListingsController {
             }
 
             listingCommandService.delete(listing);
-            return ResponseEntity.ok(Map.of("message", "Объявление успешно удалено!"));
+            return ResponseEntity.ok(Map.of("message", "listingDelete", "status", "success"));
             
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("message", "Ошибка при удалении объявления!"));
+            return ResponseEntity.ok(Map.of("message", "listingDelete", "status", "error"));
         }
     }
 
