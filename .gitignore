@@ -34,5 +34,6 @@ build/
 
 config/database.yml
 config/oauth.yml
+config/rabbitmq.yml
 
 ssl/
