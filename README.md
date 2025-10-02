@@ -6,10 +6,6 @@ Projekti koostuu useista sovelluksista ja käyttöliittymistä.
 
 ---
 
-Tässä on päivitetty teknologiapino suomeksi:
-
----
-
 **Teknologiat**
 
 **Backend:**
