@@ -221,7 +221,3 @@ Projekti koostuu useista sovelluksista ja käyttöliittymistä.
 * Lisätä mahdollisuus poistaa ilmoituksen arvostelu
 * Lisätä mahdollisuus ladata avatar
 * Siirtää chat erilliseen sovellukseen, joka kirjoitetaan GoLangilla
-
----
-
-Хочешь, я сделаю ещё **двуязычную версию** (русский+финский рядом в таблице), чтобы удобно было и для команды, и для будущих партнёров?
