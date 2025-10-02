@@ -6,14 +6,47 @@ Projekti koostuu useista sovelluksista ja käyttöliittymistä.
 
 ---
 
-## Teknologiat
+Tässä on päivitetty teknologiapino suomeksi:
 
-* Backend: Java 21, Spring Boot (Web, Security, Data JPA, OAuth2, WebSocket, Ampq), Hibernate, MySQL/mariaDB, RabbitMq
-* Frontend: React
-* Integraatiot: Google OAuth2
-* Reaaliaika: WebSocket (chat, ilmoitukset)
-* Lokalisointi: RU, EN, FI
-* Rakennus: Maven
+---
+
+**Teknologiat**
+
+**Backend:**
+
+* Java 21
+* Spring Boot (Web, Security, Data JPA, OAuth2, WebSocket, AMQP)
+* Hibernate
+* MySQL / MariaDB (tietokanta palveluntarjoajan hallinnoimana)
+* RabbitMQ (erillinen VPS-kontti, itse hallinnoitu)
+
+**Frontend:**
+
+* React (oma CSS, ilman Bootstrapia)
+
+**Integraatiot:**
+
+* Google OAuth2 (rekisteröinti ja kirjautuminen)
+
+**Reaaliaikaisuus:**
+
+* WebSocket (chat, ilmoitukset, dialogien päivitys)
+* RabbitMQ (asynkroniset tehtävät ja tapahtumajonot)
+
+**Lokalisointi:**
+
+* RU, EN, FI (`.properties` i18n-tiedostot)
+
+**Rakennus:**
+
+* Maven
+
+**Käyttöönotto:**
+
+* Backend: VPS (manuaalinen deploy `.jar`)
+* Frontend: GitHub (CI/CD, ilman manuaalista deployta)
+* RabbitMQ: erillinen VPS (kontti, itse konfiguroitu)
+* MariaDB: palveluntarjoajan tarjoama
 
 ---
 
