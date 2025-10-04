@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.workswap.common.dto.analytic.OnlineStatsMetricsDTO;
 import org.workswap.common.enums.IntervalType;
+import org.workswap.core.services.query.StatisticQueryService;
 import org.workswap.datasource.stats.model.ListingStatSnapshot;
 import org.workswap.datasource.stats.repository.ListingStatRepository;
 
@@ -29,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class StatsController {
 
     private final ListingStatRepository listingStatRepository;
+    private final StatisticQueryService statisticQueryService;
 
     @GetMapping("/views")
     @PreAuthorize("hasAuthority('VIEW_LISTING_STATS')")
@@ -114,5 +117,19 @@ public class StatsController {
         long timestamp = time.toEpochSecond(ZoneOffset.UTC);
         long rounded = (timestamp / seconds) * seconds;
         return LocalDateTime.ofEpochSecond(rounded, 0, ZoneOffset.UTC);
+    }
+
+    @GetMapping("/online-metrics/month")
+    @PreAuthorize("hasAuthority('GET_ONLINE_METRICS')")
+    public ResponseEntity<?> getMonthlyMetrics() {
+        OnlineStatsMetricsDTO dto = statisticQueryService.getMonthlyMetrics();
+        return ResponseEntity.ok(Map.of("metrics", dto));
+    }
+
+    @GetMapping("/online")
+    @PreAuthorize("hasAuthority('GET_ONLINE')")
+    public ResponseEntity<?> getOnline() {
+        int online = statisticQueryService.getLastOnlineSnapshot();
+        return ResponseEntity.ok(Map.of("online", online));
     }
 }

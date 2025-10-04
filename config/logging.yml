@@ -19,7 +19,7 @@ logging:
 
     org.workswap.core.services.query.ListingQueryService: INFO
     org.workswap.core.services.command.PermissionCommandService: INFO
-    org.workswap.core.services.command.ListingCommandService: INFO
+    org.workswap.core.services.command.ListingCommandService: DEBUG
     
     org.workswap.core.services.components.AuthService: INFO
     org.workswap.core.services.components.LangFileScheduler: INFO

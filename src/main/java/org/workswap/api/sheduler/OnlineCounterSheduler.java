@@ -25,9 +25,10 @@ public class OnlineCounterSheduler {
     public void saveOnlineAnalytic() {
 
         if (isTest == false) {
-            OnlineStatSnapshotDTO dto = new OnlineStatSnapshotDTO();
-            dto.setOnline(onlineCounter.getCurrent());
-            dto.setTimestamp(LocalDateTime.now());
+            OnlineStatSnapshotDTO dto = new OnlineStatSnapshotDTO(
+                onlineCounter.getCurrent(),
+                LocalDateTime.now()
+            );
 
             onlineStatProducer.sendOnlineStat(dto);
         }
